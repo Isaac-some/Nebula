@@ -36,6 +36,8 @@ test("个人 Demo 的保存、搜索、编辑、导出导入、隔离与删除",
   await page.getByRole("button",{name:"编辑",exact:true}).click();
   await page.locator("#note-summary").fill("编辑后的摘要");
   await page.getByRole("button",{name:"保存知识点",exact:true}).click();
+  await expect(page.locator(".editor-modal")).toHaveCount(0);
+  await expect(page.locator(".reading-paper")).toContainText("编辑后的摘要");
   await page.reload();
   await expect(page.locator(".reading-paper")).toContainText("编辑后的摘要");
   await page.locator(".settings-link").click();
@@ -51,6 +53,8 @@ test("个人 Demo 的保存、搜索、编辑、导出导入、隔离与删除",
   await page.getByLabel("关闭设置",{exact:true}).click();
   page.on("dialog",d=>d.accept());
   await page.getByRole("button",{name:"删除文档",exact:true}).click();
+  await expect(page.locator(".graph-svg")).toBeVisible();
+  await expect(node).toHaveCount(0);
   await page.reload();
   await expect(node).toHaveCount(0);
   await page.locator('input[type="file"]').setInputFiles({name:`${title}.md`,mimeType:"text/markdown",buffer:Buffer.from(markdown)});
