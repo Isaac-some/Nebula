@@ -10,7 +10,7 @@ test("页面和静态样式属于同一构建，刷新后仍保持完整布局",
       failedAssets.push(`${response.status()} ${response.url()}`);
   });
   for (let load = 0; load < 2; load++) {
-    await page.goto("/");
+    await page.goto("./");
     await expect(page.locator(".node-core").first()).toBeVisible();
     await expect(page.locator("body")).toHaveCSS(
       "background-color",

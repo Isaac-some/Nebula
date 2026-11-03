@@ -1,4 +1,5 @@
 "use client";
+import { vaultRequest } from "@/lib/client-vault";
 import { useState, useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -215,7 +216,7 @@ export default function Editor({
     setBusy(true);
     setError("");
     try {
-      const res = await fetch("/api/vault", {
+      const res = await vaultRequest("/api/vault", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

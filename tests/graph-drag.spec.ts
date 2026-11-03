@@ -8,7 +8,7 @@ const point = async (page: Page, title: string) => {
 test("没有默认高亮；悬浮移开、取消选择和刷新均能回到中性全图", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("./");
   await expect(node(page, "AI Agent")).toBeVisible();
   const selected = page.locator('.graph-node[data-selected="true"]'),
     lit = page.locator('.graph-link[data-highlighted="true"]');
@@ -37,7 +37,7 @@ test("没有默认高亮；悬浮移开、取消选择和刷新均能回到中�
 test("拖入另一节点时对方实时让位，关联节点跟随，松手后继续缓动且不误选", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("./");
   await expect(node(page, "AI Agent")).toBeVisible();
   const a = await point(page, "AI Agent"),
     b = await point(page, "RAG"),
@@ -59,7 +59,7 @@ test("拖入另一节点时对方实时让位，关联节点跟随，松手后�
   ).toBeGreaterThan(1);
   await expect(node(page, "AI Agent")).toHaveAttribute("data-dragged", "true");
   await expect(page.locator('.graph-node[data-hovered="true"]')).toHaveCount(0);
-  await page.screenshot({ path: "docs/research/drag-live-avoidance.png" });
+  await page.screenshot({ path: test.info().outputPath("drag-live-avoidance.png") });
   expect(await page.locator(".graph-stage").getAttribute("transform")).toBe(
     camera,
   );

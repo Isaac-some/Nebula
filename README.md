@@ -1,5 +1,9 @@
 # Nebula
 
+[在线个人 Demo](https://isaac-some.github.io/Nebula/) · [自动部署记录](https://github.com/Isaac-some/Nebula/actions)
+
+在线版无需安装，首次打开自动载入 56 篇示例。笔记、新增内容和学习状态保存在当前浏览器的 IndexedDB 中，访问者之间独立，不上传服务器、不跨设备同步。清除网站数据会删除笔记，请在设置中导出 ZIP 备份。支持编辑、双链图谱、收藏、学习状态、关键词模糊搜索，以及 Markdown 导入/导出；语义模型仅在下面的本机服务版提供。
+
 本地运行的 Web 知识库：文档、双向链接、星图与学习路径。当前包含 26 篇 AI Agent 学习示例、8 篇基础概念、17 篇研究综述和 5 个机构入口。运行时不调用生成式 AI。研究综述覆盖 Anthropic、OpenAI、DeepSeek、Google、Google DeepMind，选取 34 个独立一手来源，主要为 2015—2025 年资料；每篇综述保留 2—3 个原始链接，不是全面抓取或最新文献目录。
 
 ## 打开
@@ -53,7 +57,27 @@ npm run dev -- --hostname 127.0.0.1 --port 3210
 
 ## GitHub 与在线部署
 
-仓库的 GitHub Actions 会在每次推送和 Pull Request 时运行 lint、TypeScript 检查和生产构建。当前应用包含 Next.js 服务端 API 和 SQLite 文件写入，不能部署到 GitHub Pages 这类静态托管。要让它成为可用的在线 Web 应用，需要支持 Node.js 服务的托管环境，并另行配置持久化磁盘与访问鉴权；在完成这些改造前，请勿公开承载真实私人知识库数据。
+推送到 `main` 后，GitHub Actions 自动检查源码、构建在线个人版、运行浏览器验收并发布到 GitHub Pages。Pull Request 执行检查与构建，不发布。在线版本通过 `npm run build:pages` 生成 `out/` 静态文件，默认子路径 `/Nebula`，可用环境变量 `PAGES_BASE_PATH` 修改。
+
+发布构建在被 Git 忽略的 `temp/pages-build/` 中独立运行，不会覆盖正在运行的本机服务的 `.next/`，也不会读取或上传 `data/`。构建只使用仓库中的 `seed/` 示例。服务端 API 保留给本机版，在线版所有数据操作在浏览器内执行。
+
+本地预览发布版本：
+
+```bash
+cd /Users/isaac/Documents/ChatGPT/知识图谱
+npm ci
+npm run build:pages
+mkdir -p temp/pages-preview
+ln -sfn ../../out temp/pages-preview/Nebula
+python3 -m http.server 3220 --bind 127.0.0.1 --directory temp/pages-preview
+```
+
+打开 http://127.0.0.1:3220/Nebula/ 。在线个人版验收：
+
+```bash
+cd /Users/isaac/Documents/ChatGPT/知识图谱
+ATLAS_TEST_URL=http://127.0.0.1:3220/Nebula/ ATLAS_BROWSER_DEMO=true npx playwright test tests/browser-demo.spec.ts tests/render.spec.ts tests/graph-drag.spec.ts tests/graph-interaction.spec.ts
+```
 
 ## 验证
 

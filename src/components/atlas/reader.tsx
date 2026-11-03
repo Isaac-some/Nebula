@@ -1,4 +1,5 @@
 "use client";
+import { vaultRequest, browserDemo } from "@/lib/client-vault";
 import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
@@ -44,7 +45,7 @@ export default function Reader({
     [busy, setBusy] = useState(false);
   useEffect(() => {
     let active = true;
-    fetch(`/api/vault?id=${id}&level=${level}`)
+    vaultRequest(`/api/vault?id=${id}&level=${level}`)
       .then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw Error(d.error);
@@ -71,10 +72,10 @@ export default function Reader({
     if (!note) return;
     setBusy(true);
     try {
-      const response = await fetch(`/api/vault?id=${id}`);
+      const response = await vaultRequest(`/api/vault?id=${id}`);
       const full = await response.json();
       if (!response.ok) throw Error(full.error);
-      const r = await fetch("/api/vault", {
+      const r = await vaultRequest("/api/vault", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...full, ...patch }),
@@ -90,7 +91,7 @@ export default function Reader({
     }
   };
   const edit = async () => {
-    const r = await fetch(`/api/vault?id=${id}`);
+    const r = await vaultRequest(`/api/vault?id=${id}`);
     const full = await r.json();
     if (r.ok) onEdit(full);
     else setError(full.error);
@@ -332,7 +333,7 @@ export default function Reader({
                   onClick={() => {
                     if (
                       window.confirm(
-                        "删除这篇文档？原文会保留在本机回收目录；其他文档中的链接将变为待补充。",
+                        browserDemo ? "从此浏览器删除这篇文档？请先导出备份；其他文档中的链接将变为待补充。" : "删除这篇文档？原文会保留在本机回收目录；其他文档中的链接将变为待补充。",
                       )
                     )
                       onDelete(id);
@@ -377,10 +378,10 @@ export function NotePreview({
   const status = async (value: Note["status"]) => {
     setBusy(true);
     try {
-      const r = await fetch(`/api/vault?id=${note.id}`);
+      const r = await vaultRequest(`/api/vault?id=${note.id}`);
       const full = await r.json();
       if (!r.ok) throw Error(full.error);
-      const save = await fetch("/api/vault", {
+      const save = await vaultRequest("/api/vault", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...full, status: value }),

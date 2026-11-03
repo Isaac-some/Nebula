@@ -1,4 +1,5 @@
 "use client";
+import { vaultRequest, browserDemo } from "@/lib/client-vault";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import AtlasSelect from "./select";
 import {
@@ -90,7 +91,7 @@ export default function Atlas() {
     toastTimer.current = setTimeout(() => setToast(""), 5000);
   };
   const reload = useCallback(async () => {
-    const r = await fetch("/api/vault");
+    const r = await vaultRequest("/api/vault");
     const data = await r.json();
     if (!r.ok) throw Error(data.error);
     setVault(data);
@@ -100,7 +101,7 @@ export default function Atlas() {
     return data as Vault;
   }, []);
   useEffect(() => {
-    fetch("/api/vault")
+    vaultRequest("/api/vault")
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok) throw Error(data.error);
@@ -164,11 +165,11 @@ export default function Atlas() {
     return () => window.removeEventListener("keydown", key);
   }, []);
   useEffect(() => {
-    if (!settings) return;
+    if (!settings || browserDemo) return;
     let active = true;
     const poll = async () => {
       try {
-        const r = await fetch("/api/index");
+        const r = await vaultRequest("/api/index");
         if (active) setIndex(await r.json());
       } catch {
         if (active) setError("无法读取索引状态。");
@@ -192,7 +193,7 @@ export default function Atlas() {
     void reload().catch((e) => notify(e.message));
   };
   const remove = async (id: string) => {
-    const r = await fetch(`/api/vault?id=${id}`, { method: "DELETE" });
+    const r = await vaultRequest(`/api/vault?id=${id}`, { method: "DELETE" });
     const d = await r.json();
     if (!r.ok) {
       notify(d.error);
@@ -200,7 +201,7 @@ export default function Atlas() {
     }
     await reload();
     go("graph");
-    notify("文档已删除，原文保留在 data/trash 回收目录");
+    notify(browserDemo ? "文档已从此浏览器删除" : "文档已删除，原文保留在 data/trash 回收目录");
   };
   const importFiles = async (files: FileList | null) => {
     if (!files?.length) return;
@@ -212,7 +213,7 @@ export default function Atlas() {
           content: await f.text(),
         })),
       );
-      const r = await fetch("/api/import", {
+      const r = await vaultRequest("/api/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ files: content }),
@@ -230,12 +231,20 @@ export default function Atlas() {
       if (fileInput.current) fileInput.current.value = "";
     }
   };
-  const exportVault = () => {
-    const a = document.createElement("a");
-    a.href = "/api/export";
-    a.download = "nebula-vault.zip";
-    a.click();
-    notify("正在导出 Obsidian 兼容的 Markdown 知识库");
+  const exportVault = async () => {
+    try {
+      const response = await vaultRequest("/api/export");
+      if (!response.ok) throw Error((await response.json()).error);
+      const url = URL.createObjectURL(await response.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "nebula-vault.zip";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      notify("已导出 Obsidian 兼容的 Markdown 知识库");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "导出失败");
+    }
   };
   const baseVisible = useMemo(
     () =>
@@ -356,7 +365,7 @@ export default function Atlas() {
         >
           <span className="workspace-avatar">知</span>
           <span>
-            我的知识宇宙<small>个人本地空间</small>
+            我的知识宇宙<small>{browserDemo ? "个人 Demo · 浏览器保存" : "个人本地空间"}</small>
           </span>
           <ChevronDown size={14} />
         </button>
@@ -925,9 +934,7 @@ export default function Atlas() {
                 你的知识，保存在你这里
               </h3>
               <p>
-                文档和索引保存在本机 <code>data/</code>，Markdown 副本位于{" "}
-                <code>data/vault/wiki/</code>。导出后可直接作为 Obsidian
-                知识库打开。
+                {browserDemo ? "笔记仅保存在当前浏览器，不会上传或跨设备同步。清除网站数据会删除笔记，建议定期导出备份。" : <>文档和索引保存在本机 <code>data/</code>，Markdown 副本位于 <code>data/vault/wiki/</code>。</>}导出后可作为 Obsidian 知识库打开。
               </p>
               <div className="settings-actions">
                 <button className="secondary" onClick={exportVault}>
@@ -950,8 +957,9 @@ export default function Atlas() {
                 检索方式
               </h3>
               <p>
-                关键词搜索立即可用。语义检索在本机运行中英文嵌入模型，建立索引后，能找到“说法不同、意思接近”的内容。修改文档后可补建索引。
+                {browserDemo ? "Demo 支持标题、别名、标签与正文的关键词和模糊搜索。" : "关键词搜索立即可用。语义检索在本机运行中英文嵌入模型，建立索引后，能找到‘说法不同、意思接近’的内容。修改文档后可补建索引。"}
               </p>
+              {!browserDemo && <>
               <div className="index-status">
                 <span className={index?.state === "ready" ? "success" : ""}>
                   {index?.state === "indexing" || index?.state === "loading" ? (
@@ -972,7 +980,7 @@ export default function Atlas() {
                   }
                   onClick={async () => {
                     try {
-                      const r = await fetch("/api/index", { method: "POST" });
+                      const r = await vaultRequest("/api/index", { method: "POST" });
                       const d = await r.json();
                       if (!r.ok) throw Error(d.error);
                       setIndex(d);
@@ -989,6 +997,7 @@ export default function Atlas() {
               <small className="quiet">
                 模型首次准备需要下载；检索内容在本机计算，无需 API Key。
               </small>
+              </>}
             </section>
             <section>
               <h3>

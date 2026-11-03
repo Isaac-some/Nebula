@@ -51,7 +51,7 @@ test("图谱按缩放分层显示文字，悬浮临时突出关系，点击、�
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("./");
   await expect(core(page, "AI Agent")).toBeVisible();
   await core(page, "AI Agent").hover();
   const initial = await labels(page);
@@ -72,7 +72,7 @@ test("图谱按缩放分层显示文字，悬浮临时突出关系，点击、�
     await page.locator('.graph-link[data-highlighted="false"]').count(),
   ).toBeGreaterThan(10);
   await expect(highlighted.first()).toHaveAttribute("stroke-opacity", "0.9");
-  await page.screenshot({ path: "docs/research/graph-gravity-hover.png" });
+  await page.screenshot({ path: test.info().outputPath("graph-gravity-hover.png") });
   await page.mouse.move(290, 200);
   await expect(page.getByRole("tooltip")).toHaveCount(0);
   await expect(highlighted).toHaveCount(0);
@@ -85,7 +85,7 @@ test("图谱按缩放分层显示文字，悬浮临时突出关系，点击、�
   expect(await page.locator(".graph-stage").getAttribute("transform")).toBe(
     scene,
   );
-  await page.screenshot({ path: "docs/research/graph-gravity-selected.png" });
+  await page.screenshot({ path: test.info().outputPath("graph-gravity-selected.png") });
   const before = await node(page, "强化学习").getAttribute("transform");
   const b = (await core(page, "强化学习").boundingBox())!;
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
@@ -111,7 +111,7 @@ test("图谱按缩放分层显示文字，悬浮临时突出关系，点击、�
   expect(Math.max(...zoomed.heights)).toBeGreaterThan(
     Math.max(...initial.heights),
   );
-  await page.screenshot({ path: "docs/research/graph-gravity-zoom.png" });
+  await page.screenshot({ path: test.info().outputPath("graph-gravity-zoom.png") });
   await page.getByLabel("查看全图", { exact: true }).click();
   await core(page, "强化学习").dblclick({ delay: 130 });
   await expect(
@@ -139,7 +139,7 @@ test("图谱按缩放分层显示文字，悬浮临时突出关系，点击、�
 test("力度改变实际间距且保留视角，文字与节点外观可以调整并在刷新后保留", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("./");
   await expect(core(page, "AI Agent")).toBeVisible();
   await page.getByLabel("图谱设置", { exact: true }).click();
   const panel = page.getByRole("region", { name: "图谱显示与力度设置" });
@@ -181,7 +181,7 @@ test("力度改变实际间距且保留视角，文字与节点外观可以调�
   await expect
     .poll(async () => (await labels(page)).count)
     .toBeGreaterThan(low.count);
-  await page.screenshot({ path: "docs/research/graph-gravity-settings.png" });
+  await page.screenshot({ path: test.info().outputPath("graph-gravity-settings.png") });
   await page.reload();
   await page.getByLabel("图谱设置", { exact: true }).click();
   await expect(page.locator("#graph-repelForce")).toHaveValue("20");
@@ -204,5 +204,5 @@ test("力度改变实际间距且保留视角，文字与节点外观可以调�
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBeTruthy();
-  await page.screenshot({ path: "docs/research/graph-gravity-mobile.png" });
+  await page.screenshot({ path: test.info().outputPath("graph-gravity-mobile.png") });
 });

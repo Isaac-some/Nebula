@@ -1,4 +1,5 @@
 "use client";
+import { vaultRequest, browserDemo } from "@/lib/client-vault";
 import { useEffect, useState, useRef } from "react";
 import {
   Search,
@@ -31,7 +32,7 @@ export default function SearchModal({
     const abort = new AbortController();
     const id = setTimeout(async () => {
       try {
-        const res = await fetch(
+        const res = await vaultRequest(
           `/api/search?q=${encodeURIComponent(q)}&mode=${mode}`,
           { signal: abort.signal },
         );
@@ -92,11 +93,11 @@ export default function SearchModal({
         </button>
       </div>
       <div className="search-modes">
-        {[
+        {(browserDemo ? [["keyword", "关键词"]] : [
           ["hybrid", "混合检索"],
           ["keyword", "关键词"],
           ["semantic", "语义检索"],
-        ].map(([value, label]) => (
+        ]).map(([value, label]) => (
           <button
             key={value}
             className={mode === value ? "active" : ""}

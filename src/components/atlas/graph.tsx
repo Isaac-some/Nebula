@@ -232,10 +232,16 @@ export default function Graph({
         n.label.length > 27 ? n.label.slice(0, 26) + "…" : n.label,
       );
     const measureContext = document.createElement("canvas").getContext("2d");
+    const textWidths = new Map<string, number>();
     const measure = (text: string, font: number) => {
       if (!measureContext) return text.length * font * 0.65;
-      measureContext.font = `500 ${font}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-      return measureContext.measureText(text).width;
+      let width = textWidths.get(text);
+      if (width === undefined) {
+        measureContext.font = '500 100px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        width = measureContext.measureText(text).width;
+        textWidths.set(text, width);
+      }
+      return width * font / 100;
     };
     let previousFocus: string | null | undefined,
       hopCache = new Map<string, number>();
@@ -257,17 +263,34 @@ export default function Graph({
       }
       return hopCache;
     };
+    let pendingRender = 0;
+    let appearanceKey = "";
     const render = () => {
+      if (!pendingRender) {
+        pendingRender = requestAnimationFrame(() => {
+          pendingRender = 0;
+          draw();
+        });
+      }
+    };
+    const draw = () => {
       const prefs = prefsRef.current,
         focus = dragged.current || hovered.current || selection.current,
         hops = distances(focus),
         focusPoint = focus ? byId.get(focus) : undefined;
       const z = transform.k / baseScale.current;
+      const nextAppearance = [
+        focus, hovered.current, dragged.current, selection.current,
+        transform.k, prefs.nodeSize, prefs.lineWidth,
+      ].join(":");
+      const appearanceChanged = nextAppearance !== appearanceKey;
+      appearanceKey = nextAppearance;
       paths
         .attr(
           "d",
           (e) => `M${e.source.x},${e.source.y}L${e.target.x},${e.target.y}`,
-        )
+        );
+      if (appearanceChanged) paths
         .attr("stroke", (e) =>
           focus && (e.source.id === focus || e.target.id === focus)
             ? "#b0d9c5"
@@ -291,38 +314,39 @@ export default function Graph({
         .attr("data-highlighted", (e) =>
           String(!!focus && (e.source.id === focus || e.target.id === focus)),
         );
-      groups
-        .attr("transform", (n) => `translate(${n.x},${n.y})`)
-        .attr("data-distance", (n) => (focus ? (hops.get(n.id) ?? 99) : 0))
-        .attr("data-hovered", (n) => String(n.id === hovered.current))
-        .attr("data-dragged", (n) => String(n.id === dragged.current))
-        .attr("data-selected", (n) => String(n.id === selection.current))
-        .attr("aria-pressed", (n) => String(n.id === selection.current))
-        .attr("aria-describedby", (n) =>
-          n.id === hovered.current ? "graph-node-tooltip" : null,
-        );
-      groups
-        .select<SVGCircleElement>(".node-hit")
-        .attr("r", (n) => Math.max(n.r * prefs.nodeSize + 5, 12 / transform.k));
-      groups
-        .select<SVGCircleElement>(".node-core")
-        .attr("r", (n) => n.r * prefs.nodeSize * (n.id === focus ? 1.18 : 1))
-        .attr("fill", (n) => (n.type === "unresolved" ? "#121921" : n.color))
-        .attr("stroke", (n) => n.color)
-        .attr("opacity", (n) =>
-          !focus || (hops.get(n.id) ?? 99) <= 1 ? 1 : 0.38,
-        );
-      groups
-        .select<SVGCircleElement>(".node-ring")
-        .attr("r", (n) => n.r * prefs.nodeSize + 5 / transform.k)
-        .attr("stroke", (n) => n.color)
-        .attr("opacity", (n) =>
-          n.id !== focus
-            ? 0
-            : n.id === dragged.current || n.id === selection.current
-              ? 0.95
-              : 0.5,
-        );
+      groups.attr("transform", (n) => `translate(${n.x},${n.y})`);
+      if (appearanceChanged) {
+        groups.attr("data-distance", (n) => (focus ? (hops.get(n.id) ?? 99) : 0))
+          .attr("data-hovered", (n) => String(n.id === hovered.current))
+          .attr("data-dragged", (n) => String(n.id === dragged.current))
+          .attr("data-selected", (n) => String(n.id === selection.current))
+          .attr("aria-pressed", (n) => String(n.id === selection.current))
+          .attr("aria-describedby", (n) =>
+            n.id === hovered.current ? "graph-node-tooltip" : null,
+          );
+        groups
+          .select<SVGCircleElement>(".node-hit")
+          .attr("r", (n) => Math.max(n.r * prefs.nodeSize + 5, 12 / transform.k));
+        groups
+          .select<SVGCircleElement>(".node-core")
+          .attr("r", (n) => n.r * prefs.nodeSize * (n.id === focus ? 1.18 : 1))
+          .attr("fill", (n) => (n.type === "unresolved" ? "#121921" : n.color))
+          .attr("stroke", (n) => n.color)
+          .attr("opacity", (n) =>
+            !focus || (hops.get(n.id) ?? 99) <= 1 ? 1 : 0.38,
+          );
+        groups
+          .select<SVGCircleElement>(".node-ring")
+          .attr("r", (n) => n.r * prefs.nodeSize + 5 / transform.k)
+          .attr("stroke", (n) => n.color)
+          .attr("opacity", (n) =>
+            n.id !== focus
+              ? 0
+              : n.id === dragged.current || n.id === selection.current
+                ? 0.95
+                : 0.5,
+          );
+      }
       const candidates: LabelCandidate[] = points.map((n) => {
         const h = focus ? (hops.get(n.id) ?? 99) : 2,
           essential = n.id === focus;
@@ -708,6 +732,7 @@ export default function Graph({
       simulation.stop();
       observer.disconnect();
       cancelAnimation();
+      cancelAnimationFrame(pendingRender);
       root.on(".zoom", null).on(".clear", null).on(".graph", null);
       groups.on(".drag", null);
       refresh.current = () => {};

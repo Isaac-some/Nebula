@@ -1,0 +1,255 @@
+{
+  "conditions": "Chrome headless, 1512x982, CPU throttling 4x, same static export and 56 seed notes; 20 wheel events then 45-step drag, CDP sampling profiler + MutationObserver; single-run measurements, not cross-device guarantee",
+  "before": {
+    "frames": 232,
+    "p50": 50,
+    "p95": 216.59999999999854,
+    "over50": 108,
+    "mutations": 508482,
+    "top": [
+      {
+        "name": "(program)",
+        "file": "",
+        "ms": 11022
+      },
+      {
+        "name": "measureText",
+        "file": "",
+        "ms": 1440
+      },
+      {
+        "name": "measureText",
+        "file": "",
+        "ms": 1369
+      },
+      {
+        "name": "setAttribute",
+        "file": "",
+        "ms": 946
+      },
+      {
+        "name": "(idle)",
+        "file": "",
+        "ms": 472
+      },
+      {
+        "name": "setAttribute",
+        "file": "",
+        "ms": 253
+      },
+      {
+        "name": "(garbage collector)",
+        "file": "",
+        "ms": 217
+      },
+      {
+        "name": "L",
+        "file": "page-e51d3563decd877b.js",
+        "ms": 123
+      },
+      {
+        "name": "measureText",
+        "file": "",
+        "ms": 120
+      },
+      {
+        "name": "",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 108
+      },
+      {
+        "name": "getBoundingClientRect",
+        "file": "",
+        "ms": 100
+      },
+      {
+        "name": "setAttribute",
+        "file": "",
+        "ms": 92
+      },
+      {
+        "name": "measureText",
+        "file": "",
+        "ms": 84
+      },
+      {
+        "name": "D",
+        "file": "page-e51d3563decd877b.js",
+        "ms": 59
+      },
+      {
+        "name": "L",
+        "file": "page-e51d3563decd877b.js",
+        "ms": 55
+      }
+    ]
+  },
+  "textWidthCache": {
+    "frames": 240,
+    "p50": 33.30000000000109,
+    "p95": 83.30000000000018,
+    "over50": 51,
+    "mutations": 513017,
+    "top": [
+      {
+        "name": "(program)",
+        "file": "",
+        "ms": 7080
+      },
+      {
+        "name": "setAttribute",
+        "file": "",
+        "ms": 720
+      },
+      {
+        "name": "(idle)",
+        "file": "",
+        "ms": 506
+      },
+      {
+        "name": "setAttribute",
+        "file": "",
+        "ms": 185
+      },
+      {
+        "name": "setAttribute",
+        "file": "",
+        "ms": 89
+      },
+      {
+        "name": "getBoundingClientRect",
+        "file": "",
+        "ms": 89
+      },
+      {
+        "name": "(garbage collector)",
+        "file": "",
+        "ms": 88
+      },
+      {
+        "name": "",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 83
+      },
+      {
+        "name": "c.visit",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 44
+      },
+      {
+        "name": "each",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 34
+      },
+      {
+        "name": "",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 27
+      },
+      {
+        "name": "O",
+        "file": "page-d42de161c18806b9.js",
+        "ms": 27
+      },
+      {
+        "name": "b",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 26
+      },
+      {
+        "name": "getBoundingClientRect",
+        "file": "",
+        "ms": 25
+      },
+      {
+        "name": "",
+        "file": "",
+        "ms": 22
+      }
+    ]
+  },
+  "after": {
+    "frames": 235,
+    "p50": 33.20000000000073,
+    "p95": 50,
+    "over50": 10,
+    "mutations": 161899,
+    "top": [
+      {
+        "name": "(program)",
+        "file": "",
+        "ms": 5510
+      },
+      {
+        "name": "setAttribute",
+        "file": "",
+        "ms": 492
+      },
+      {
+        "name": "(idle)",
+        "file": "",
+        "ms": 379
+      },
+      {
+        "name": "(garbage collector)",
+        "file": "",
+        "ms": 58
+      },
+      {
+        "name": "",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 55
+      },
+      {
+        "name": "q",
+        "file": "page-781caa88dd6c9ab6.js",
+        "ms": 35
+      },
+      {
+        "name": "c.visit",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 34
+      },
+      {
+        "name": "g",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 29
+      },
+      {
+        "name": "b",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 26
+      },
+      {
+        "name": "c.visit",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 21
+      },
+      {
+        "name": "setProperty",
+        "file": "",
+        "ms": 16
+      },
+      {
+        "name": "",
+        "file": "page-781caa88dd6c9ab6.js",
+        "ms": 16
+      },
+      {
+        "name": "",
+        "file": "87c73c54-6890e5aad4d9e16a.js",
+        "ms": 10
+      },
+      {
+        "name": "each",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 9
+      },
+      {
+        "name": "",
+        "file": "161-a23af8423fc054d4.js",
+        "ms": 9
+      }
+    ]
+  }
+}
