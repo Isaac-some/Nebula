@@ -40,7 +40,7 @@ jobs:
           mkdir -p temp/pages-preview
           ln -s ../../out temp/pages-preview/Nebula
           python3 -m http.server 3220 --bind 127.0.0.1 --directory temp/pages-preview > /tmp/nebula-pages.log 2>&1 &
-          ATLAS_TEST_URL=http://127.0.0.1:3220/Nebula/ ATLAS_BROWSER_DEMO=true npx playwright test tests/browser-demo.spec.ts tests/render.spec.ts tests/graph-drag.spec.ts
+          ATLAS_TEST_URL=http://127.0.0.1:3220/Nebula/ ATLAS_BROWSER_DEMO=true npx playwright test tests/browser-demo.spec.ts tests/import-skill.spec.ts tests/render.spec.ts tests/graph-drag.spec.ts
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out

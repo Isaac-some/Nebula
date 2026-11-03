@@ -42,6 +42,7 @@ import Reader, { NotePreview } from "./reader";
 import Editor from "./editor";
 import SearchModal from "./search";
 import Modal from "./modal";
+import ImportDialog from "./import-dialog";
 type View = "graph" | "library" | "learning" | "favorites";
 type IndexStatus = {
   state: string;
@@ -83,6 +84,7 @@ export default function Atlas() {
     [toast, setToast] = useState(""),
     [index, setIndex] = useState<IndexStatus | null>(null),
     [importing, setImporting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null),
     toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notify = (message: string) => {
@@ -430,7 +432,7 @@ export default function Atlas() {
           ))}
           <button
             className="import-link"
-            onClick={() => fileInput.current?.click()}
+            onClick={() => { setSettings(false); setImportOpen(true); }}
             disabled={importing}
           >
             <Upload size={14} />
@@ -803,7 +805,7 @@ export default function Atlas() {
                   <button
                     className="secondary small"
                     disabled={importing}
-                    onClick={() => fileInput.current?.click()}
+                    onClick={() => { setSettings(false); setImportOpen(true); }}
                   >
                     <Upload size={14} />
                     导入
@@ -912,6 +914,7 @@ export default function Atlas() {
           onSaved={save}
         />
       )}
+      {importOpen && <ImportDialog onClose={() => setImportOpen(false)} onChoose={() => { setImportOpen(false); fileInput.current?.click(); }} />}
       {settings && (
         <Modal onClose={() => setSettings(false)} className="settings-modal">
           <header className="modal-heading">
@@ -944,7 +947,7 @@ export default function Atlas() {
                 <button
                   className="secondary"
                   disabled={importing}
-                  onClick={() => fileInput.current?.click()}
+                  onClick={() => { setSettings(false); setImportOpen(true); }}
                 >
                   <Upload size={15} />
                   导入 Markdown

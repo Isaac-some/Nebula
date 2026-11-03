@@ -1,0 +1,34 @@
+import { test, expect } from "@playwright/test";
+import fs from "node:fs/promises";
+import { parse } from "yaml";
+
+test("导入面板交付 Skill 与可识别的示例文件", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("./");
+  await expect(page.locator(".graph-node").first()).toBeVisible();
+  await page.locator(".import-link").click();
+  const modal = page.locator(".import-modal");
+  await expect(modal).toBeVisible();
+  await modal.getByRole("button", { name: "复制 Skill", exact: true }).click();
+  await expect(modal.getByRole("status")).toContainText("已复制");
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  const front = /^---\n([\s\S]*?)\n---/.exec(copied)!;
+  expect(parse(front[1]).name).toBe("nebula-markdown");
+  const downloadPromise = page.waitForEvent("download");
+  await modal.getByRole("button", { name: "下载格式示例", exact: true }).click();
+  const downloaded = await downloadPromise;
+  const contents = await fs.readFile((await downloaded.path())!, "utf8");
+  expect(contents).toContain("[[AI Agent]]");
+  const chooserPromise = page.waitForEvent("filechooser");
+  await modal.getByRole("button", { name: "选择 Markdown 文件", exact: true }).click();
+  await (await chooserPromise).setFiles({ name: "example.md", mimeType: "text/markdown", buffer: Buffer.from(contents) });
+  await expect(page.getByRole("status")).toContainText("已导入 1 篇");
+  const node = page.locator('.graph-node[data-note-title="知识连接示例"]');
+  await expect(node).toHaveCount(1);
+  await page.keyboard.press("ControlOrMeta+k");
+  await page.getByLabel("搜索知识库", { exact: true }).fill("知识连接示例");
+  await page.locator(".search-hit").filter({ hasText: "知识连接示例" }).click();
+  await expect(page.locator(".reading-paper")).toContainText("通过双链把一个概念连接到已有知识");
+  await page.getByRole("button", { name: "L1 核心概览" }).click();
+  await expect(page.locator(".reading-paper")).toContainText("每篇文档描述一个主要概念");
+});
