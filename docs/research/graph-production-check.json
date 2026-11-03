@@ -1,0 +1,18 @@
+{
+  "notes": 56,
+  "relations": 329,
+  "unresolved": 0,
+  "wheel": {
+    "before": 1,
+    "after": 1.283
+  },
+  "index": {
+    "state": "idle",
+    "done": 0,
+    "total": 0,
+    "error": "",
+    "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "indexed": 56,
+    "documents": 56
+  }
+}

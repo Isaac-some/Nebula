@@ -1,0 +1,1083 @@
+[
+  {
+    "title": "从工作流到自主 Agent：何时值得增加复杂度",
+    "collection": "前沿研究",
+    "summary": "综合 Anthropic 的架构方法与研究系统实践，理解固定流程、动态决策和多 Agent 的取舍。",
+    "overview": "先分清任务路径能否预先确定，再决定使用单次调用、固定工作流或自主 Agent。多 Agent 的价值来自可并行探索，也需要付出协调与调用成本。",
+    "content": "## 要解决的问题\n\n看到 Agent 完成整项工作，很容易把效果归因于“更加自主”。真正需要判断的是：任务步骤能否提前写清、下一步是否依赖刚获得的信息，以及失败后如何发现。Anthropic 将预定义代码路径称为[[工作流]]，把模型动态决定步骤与[[工具调用]]的系统称为自主 [[AI Agent]]。[S1](https://www.anthropic.com/research/building-effective-agents)\n\n## 机制与证据\n\n固定任务可以串联、路由或并行执行；开放问题可以由协调者拆分子任务，再汇总结果。研究系统让多个 Agent 在独立[[上下文窗口]]里探索不同方向，从而扩大搜索覆盖。其内部研究评测中，多 Agent 配置优于单 Agent，但模型组合与资源投入也有变化，不能把收益全部归因于“人数更多”。[S2](https://www.anthropic.com/research/multi-agent-research-system)\n\n## 边界与学习连接\n\n这两篇是工程经验与内部评测，并非证明某种架构普遍最优。可独立分解的广度搜索更适合并行；强依赖、共享状态多的任务会增加协调成本。对个人知识库，先把检索、阅读、引用记录做稳定，再考虑自动探索。阅读[[上下文工程：把有限窗口留给有用信息]]可以理解为什么子任务需要独立上下文；阅读[[ReAct 与 WebAgent：让行动带回新证据]]可以看到自主循环的具体形式。\n\n## 阅读练习\n\n选一个自己要完成的任务，写出哪些步骤确定、哪些步骤需要等新信息，再分别标记失败的发现方式。若流程已经能够明确表达，就先尝试固定路径；若任务必须根据观察改向，再比较自主循环是否值得。把成功标准和停止条件写在方案旁边，能避免仅用演示效果判断架构。\n\n## 原始来源\n\n- [S1](https://www.anthropic.com/research/building-effective-agents) · Building effective agents · Anthropic · 2024-12-19\n- [S2](https://www.anthropic.com/research/multi-agent-research-system) · How we built our multi-agent research system · Anthropic · 2025-06-13",
+    "tags": [
+      "应用层",
+      "AI Agent",
+      "工作流",
+      "多智能体",
+      "Anthropic"
+    ],
+    "prerequisites": [
+      "AI Agent",
+      "工作流",
+      "工具调用"
+    ],
+    "aliases": [
+      "Agent 架构",
+      "Multi-agent",
+      "Orchestrator workers"
+    ],
+    "source": "https://www.anthropic.com/research/building-effective-agents",
+    "sources": [
+      {
+        "title": "Building effective agents",
+        "url": "https://www.anthropic.com/research/building-effective-agents",
+        "publisher": "Anthropic",
+        "publishedAt": "2024-12-19"
+      },
+      {
+        "title": "How we built our multi-agent research system",
+        "url": "https://www.anthropic.com/research/multi-agent-research-system",
+        "publisher": "Anthropic",
+        "publishedAt": "2025-06-13"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Anthropic"
+    ],
+    "relations": [
+      {
+        "target": "AI Agent",
+        "kind": "explains"
+      },
+      {
+        "target": "工作流",
+        "kind": "contrasts"
+      },
+      {
+        "target": "上下文窗口",
+        "kind": "applies"
+      },
+      {
+        "target": "上下文工程：把有限窗口留给有用信息",
+        "kind": "extends"
+      }
+    ]
+  },
+  {
+    "title": "上下文工程：把有限窗口留给有用信息",
+    "collection": "前沿研究",
+    "summary": "把系统指令、检索片段、工具返回和长期笔记作为一个整体管理，理解上下文工程的目标与边界。",
+    "overview": "上下文工程关注每轮推理实际看见什么。检索负责选择，压缩负责保留关键状态，持久笔记负责跨窗口延续；这些环节需要分别评估。",
+    "content": "## 要解决的问题\n\n把全部历史与资料塞进[[上下文窗口]]，并不等于模型会使用全部信息。任务越长，重复工具输出、过时计划和相关性较低的段落越容易占据空间。[[上下文工程]]把[[系统提示词]]、工具定义、外部资料与消息历史视为共同需要维护的输入，而不只修改一句提示。[S1](https://www.anthropic.com/research/effective-context-engineering-for-ai-agents)\n\n## 机制与证据\n\n文章提出按需获取信息、压缩旧对话、把目标和进度写成外部笔记，以及分离子任务上下文。另一篇 think 工具文章研究在工具执行过程中插入专门思考步骤，让模型结合新返回的信息检查规则、缺口和下一步。这说明“执行后重新组织信息”与执行前写好[[提示词工程]]同样值得关注。[S2](https://www.anthropic.com/research/claude-think-tool)\n\n## 边界与学习连接\n\n压缩可能丢掉稍后才显得重要的细节；外部[[记忆机制]]也需要可靠的写入与读回。think 工具文章已在 2025 年 12 月更新，指出多数场景优先使用模型集成的扩展思考，不能把旧技巧当作当前通用配置。对知识库，可借鉴“摘要定位、按需展开原文”的阅读方式，但这属于产品推导，不是文章直接验证的结果。关联[[RAG]]、[[分层索引]]与[[从工作流到自主 Agent：何时值得增加复杂度]]。\n\n## 阅读练习\n\n给一份长会话标出目标、已做决定、待解决问题、证据位置和可丢弃内容，再尝试压缩成一页笔记。随后检查是否还能定位原始证据、恢复未完成工作。这种阅读练习帮助区分摘要和长期记忆：前者压缩当前内容，后者还需要考虑何时写入、怎样查回和如何更新。\n\n## 原始来源\n\n- [S1](https://www.anthropic.com/research/effective-context-engineering-for-ai-agents) · Effective context engineering for AI agents · Anthropic · 2025-09-29\n- [S2](https://www.anthropic.com/research/claude-think-tool) · The think tool: Enabling Claude to stop and think in complex tool use situations · Anthropic · 2025-03-20",
+    "tags": [
+      "方法层",
+      "上下文工程",
+      "上下文窗口",
+      "记忆机制",
+      "Anthropic"
+    ],
+    "prerequisites": [
+      "上下文窗口",
+      "系统提示词"
+    ],
+    "aliases": [
+      "Context engineering",
+      "Context compaction",
+      "上下文压缩"
+    ],
+    "source": "https://www.anthropic.com/research/effective-context-engineering-for-ai-agents",
+    "sources": [
+      {
+        "title": "Effective context engineering for AI agents",
+        "url": "https://www.anthropic.com/research/effective-context-engineering-for-ai-agents",
+        "publisher": "Anthropic",
+        "publishedAt": "2025-09-29"
+      },
+      {
+        "title": "The think tool: Enabling Claude to stop and think in complex tool use situations",
+        "url": "https://www.anthropic.com/research/claude-think-tool",
+        "publisher": "Anthropic",
+        "publishedAt": "2025-03-20"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Anthropic"
+    ],
+    "relations": [
+      {
+        "target": "上下文工程",
+        "kind": "explains"
+      },
+      {
+        "target": "记忆机制",
+        "kind": "applies"
+      },
+      {
+        "target": "分层索引",
+        "kind": "applies"
+      },
+      {
+        "target": "提示词工程",
+        "kind": "extends"
+      }
+    ]
+  },
+  {
+    "title": "工具设计与 MCP：连接能力和使用能力是两回事",
+    "collection": "前沿研究",
+    "summary": "MCP 提供连接标准，工具设计决定模型能否选对工具并理解结果，两者解决不同层面的问题。",
+    "overview": "把工具描述、参数、结果内容和返回长度一起设计。协议建立连接，真实任务评测才能判断连接后是否完成工作。",
+    "content": "## 要解决的问题\n\n给模型接入很多接口后，它仍可能选错工具、误填参数，或被冗长返回淹没。[[MCP]] 的提出旨在用统一协议连接数据源与 AI 应用，减少每接一个系统就重做集成的成本；它并没有自动解决工具是否好用的问题。[S1](https://www.anthropic.com/news/model-context-protocol)\n\n## 机制与证据\n\n工具设计文章把接口看成确定性软件与不确定性 Agent 之间的契约，强调清楚的命名、功能边界、参数说明，以及与任务相关的返回信息。结果可以提供简洁或详细模式：摘要帮助快速判断，必要标识符支持后续[[工具调用]]。文章还提出用真实任务评测成功率与执行轨迹，而不能只检查接口返回了成功状态。[S2](https://www.anthropic.com/research/writing-tools-for-agents)\n\n## 边界与学习连接\n\n这属于工程方法，不表示任何遵循同一协议的工具都具有相同质量。工具能连接、参数格式正确、操作完成、用户目标达成，是需要分别验证的四件事。对本地知识库，未来若接入搜索工具，返回标题、简短命中理由和可追溯来源，比直接倾倒整库更有价值；具体设计仍要通过实际任务验证。可与[[函数调用与结构化输出：格式正确之后还要验证什么]]交叉阅读，理解协议、格式约束、事实验证之间的关系，并连接[[上下文工程]]与[[模型评测]]。\n\n## 阅读练习\n\n以知识库搜索为例，分别写清工具名称、查询参数、命中摘要、可打开的文档标识与无结果处理。再用几条含糊问题测试能否完成阅读任务，而不只验证接口能否调用。这个练习可以帮助发现工具契约的缺口，也能让协议连接与任务能力在图谱里保留各自的位置。\n\n## 原始来源\n\n- [S1](https://www.anthropic.com/news/model-context-protocol) · Introducing the Model Context Protocol · Anthropic · 2024-11-25\n- [S2](https://www.anthropic.com/research/writing-tools-for-agents) · Writing effective tools for agents — with agents · Anthropic · 2025-09-11",
+    "tags": [
+      "应用层",
+      "工具调用",
+      "MCP",
+      "接口设计",
+      "Anthropic"
+    ],
+    "prerequisites": [
+      "工具调用",
+      "MCP"
+    ],
+    "aliases": [
+      "Model Context Protocol",
+      "Agent 工具设计"
+    ],
+    "source": "https://www.anthropic.com/news/model-context-protocol",
+    "sources": [
+      {
+        "title": "Introducing the Model Context Protocol",
+        "url": "https://www.anthropic.com/news/model-context-protocol",
+        "publisher": "Anthropic",
+        "publishedAt": "2024-11-25"
+      },
+      {
+        "title": "Writing effective tools for agents — with agents",
+        "url": "https://www.anthropic.com/research/writing-tools-for-agents",
+        "publisher": "Anthropic",
+        "publishedAt": "2025-09-11"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Anthropic"
+    ],
+    "relations": [
+      {
+        "target": "MCP",
+        "kind": "explains"
+      },
+      {
+        "target": "工具调用",
+        "kind": "applies"
+      },
+      {
+        "target": "模型评测",
+        "kind": "applies"
+      },
+      {
+        "target": "函数调用与结构化输出：格式正确之后还要验证什么",
+        "kind": "contrasts"
+      }
+    ]
+  },
+  {
+    "title": "从人类偏好到指令遵循：RLHF 如何改变模型行为",
+    "collection": "前沿研究",
+    "summary": "通过摘要偏好学习与 InstructGPT，区分预测下一个词、遵循指令和事实正确这三个训练目标。",
+    "overview": "人类示范提供初始行为，成对偏好训练奖励模型，强化学习再优化输出策略。奖励只是对人类偏好的近似，需要评估偏差与泛化。",
+    "content": "## 要解决的问题\n\n预训练擅长预测文本，不代表能稳定遵循用户意图。OpenAI 的摘要研究还指出，参考摘要匹配指标只是质量的替代目标：词面相似未必意味着人更喜欢读。因此，需要把人类对输出的比较引入训练。[S1](https://arxiv.org/abs/2009.01325)\n\n## 机制与证据\n\n摘要研究先收集成对偏好，再训练奖励模型预测哪份摘要更好，用[[强化学习]]调整生成策略。InstructGPT 将类似方法扩展到 API 指令：收集理想回答示范、对候选回答排序、继续优化模型。其报告中，标注者在所测提示分布上更偏好较小的指令模型，而非大得多的基础 GPT-3；这支持“训练目标影响体验”，不能解读为小模型在所有能力上胜出。[S2](https://openai.com/index/instruction-following/)\n\n## 边界与学习连接\n\n奖励模型会继承标注者偏好与样本分布，优化它不能保证所有事实正确，也不等于找到唯一的人类价值标准。更好的文字风格甚至可能让错误更有说服力。学习时可以把[[大语言模型]]的预训练、对齐训练和[[提示词工程]]分成不同知识点：前两者改变参数，后者在推理时提供输入。继续阅读[[DeepSeek-R1 与 DeepSeekMath：奖励怎样塑造推理]]，比较人类偏好奖励与数学、代码中可检查的结果奖励，二者都属于训练信号设计。\n\n## 阅读练习\n\n阅读实验时，把预训练底座、示范数据、偏好标注、奖励模型与最终评价者分别列出。特别检查“更受偏好”指的是哪些人、哪些问题，以及是否同时测了事实性。沿这些问题做笔记，可以将“回答听起来好”与“回答可由证据支持”分开，再观察两类指标是否一起改善。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2009.01325) · Learning to summarize from human feedback · OpenAI · 2020-09-02\n- [S2](https://openai.com/index/instruction-following/) · Aligning language models to follow instructions · OpenAI · 2022-01-27",
+    "tags": [
+      "模型层",
+      "强化学习",
+      "RLHF",
+      "指令微调",
+      "OpenAI"
+    ],
+    "prerequisites": [
+      "大语言模型",
+      "强化学习"
+    ],
+    "aliases": [
+      "InstructGPT",
+      "RLHF",
+      "人类反馈强化学习"
+    ],
+    "source": "https://arxiv.org/abs/2009.01325",
+    "sources": [
+      {
+        "title": "Learning to summarize from human feedback",
+        "url": "https://arxiv.org/abs/2009.01325",
+        "publisher": "OpenAI",
+        "publishedAt": "2020-09-02"
+      },
+      {
+        "title": "Aligning language models to follow instructions",
+        "url": "https://openai.com/index/instruction-following/",
+        "publisher": "OpenAI",
+        "publishedAt": "2022-01-27"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "OpenAI"
+    ],
+    "relations": [
+      {
+        "target": "强化学习",
+        "kind": "explains"
+      },
+      {
+        "target": "大语言模型",
+        "kind": "extends"
+      },
+      {
+        "target": "提示词工程",
+        "kind": "contrasts"
+      },
+      {
+        "target": "DeepSeek-R1 与 DeepSeekMath：奖励怎样塑造推理",
+        "kind": "contrasts"
+      }
+    ]
+  },
+  {
+    "title": "OpenAI o1：把计算预算放到回答之前",
+    "collection": "前沿研究",
+    "summary": "结合 o1 研究说明与系统卡，理解训练时强化学习、推理时计算和能力评测为何必须一起看。",
+    "overview": "推理模型通过训练学习更有效的中间求解过程，并在回答前使用额外计算。能力提升需要与任务类型、预算和局限一起解释。",
+    "content": "## 要解决的问题\n\n某些数学、代码与科学问题需要反复分解、检查和修正，直接生成第一个答案容易失败。o1 的研究说明把[[强化学习]]用于学习更有效的[[思维链]]，并报告训练计算与回答前的推理计算增加时，所测推理任务表现改善。[S1](https://openai.com/index/learning-to-reason-with-llms/)\n\n## 机制与证据\n\n这里有两个不同变量：训练时用奖励调整参数，推理时给单道题更多计算。前者改变模型，后者改变每次作答投入。文章比较了推理密集的考试和代码基准；配套系统卡则从幻觉、越狱、偏差与自主能力等方面评估模型，并记录训练后仍需研究的失败模式。[S2](https://openai.com/index/openai-o1-system-card/)\n\n## 边界与学习连接\n\n这不是“思考更久必然正确”的定律；难题、评测预算与抽样方式都会影响数字，也不能用一组考试成绩推断所有真实工作表现。可见的解释文本也不是内部推理真实性的保证。两份资料记录特定历史模型，不能作为当前 API 型号或价格说明。把[[推理模型]]与[[模型评测]]连接，可以提醒自己同时阅读能力结果、计算条件和限制；再与[[思维链与自洽性：从一条路径到多条候选]]对比，区分提示策略、多次采样与训练出推理行为。\n\n## 阅读练习\n\n可以选一组已有确定答案的问题，记录推理预算、响应时间和正确率，再加入一组日常写作任务做比较。不要预设所有任务都需要更多思考；通过同一评价标准观察代价和收益。这是理解论文的练习方案，真实效果仍由选定模型、数据和运行条件决定，不能用文章演示代替测量。\n\n## 原始来源\n\n- [S1](https://openai.com/index/learning-to-reason-with-llms/) · Learning to reason with LLMs · OpenAI · 2024-09-12\n- [S2](https://openai.com/index/openai-o1-system-card/) · OpenAI o1 System Card · OpenAI",
+    "tags": [
+      "模型层",
+      "推理模型",
+      "思维链",
+      "模型评测",
+      "OpenAI"
+    ],
+    "prerequisites": [
+      "大语言模型",
+      "强化学习",
+      "思维链"
+    ],
+    "aliases": [
+      "o1",
+      "Test-time compute",
+      "推理时计算"
+    ],
+    "source": "https://openai.com/index/learning-to-reason-with-llms/",
+    "sources": [
+      {
+        "title": "Learning to reason with LLMs",
+        "url": "https://openai.com/index/learning-to-reason-with-llms/",
+        "publisher": "OpenAI",
+        "publishedAt": "2024-09-12"
+      },
+      {
+        "title": "OpenAI o1 System Card",
+        "url": "https://openai.com/index/openai-o1-system-card/",
+        "publisher": "OpenAI"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "OpenAI"
+    ],
+    "relations": [
+      {
+        "target": "推理模型",
+        "kind": "explains"
+      },
+      {
+        "target": "强化学习",
+        "kind": "applies"
+      },
+      {
+        "target": "模型评测",
+        "kind": "evaluates"
+      },
+      {
+        "target": "思维链与自洽性：从一条路径到多条候选",
+        "kind": "contrasts"
+      }
+    ]
+  },
+  {
+    "title": "函数调用与结构化输出：格式正确之后还要验证什么",
+    "collection": "前沿研究",
+    "summary": "结合 OpenAI 两篇工程发布，理解函数参数生成、JSON Schema 约束与事实正确性的边界。",
+    "overview": "函数调用让模型提出可执行的参数，结构化输出让结果满足约定格式。应用仍负责执行、鉴权、结果校验和失败处理。",
+    "content": "## 要解决的问题\n\n自然语言回答不容易直接进入程序流程。“返回 JSON”也可能缺字段、类型不对，甚至格式正确但内容错误。OpenAI 的函数调用发布说明描述了模型根据函数定义生成调用参数，让自然语言需求能够连接外部 API。[S1](https://openai.com/index/function-calling-and-other-api-updates/)\n\n## 机制与证据\n\n[[工具调用]]时，模型提出函数名与参数，应用读取这些参数并决定是否执行。[[结构化输出]]进一步用开发者提供的 JSON Schema 约束生成形状，文章解释了受约束解码如何限制下一步可输出的内容。这为知识抽取中的标题、标签、来源字段提供了接口层面的稳定性，但它不负责判断某个结论有没有原文依据。[S2](https://openai.com/index/introducing-structured-outputs-in-the-api/)\n\n## 边界与学习连接\n\n原文明确说明，结构化结果的值仍可能出错，拒答和生成中断也需要单独处理。这里记录的是发布时机制，不是当前所有模型与端点的兼容表。对知识库，未来即使用模型生成卡片，也应把“格式校验通过”和“来源验证通过”分开保存；来源地址、原文段落与人工确认都能作为额外证据。它与[[工具设计与 MCP：连接能力和使用能力是两回事]]构成互补：MCP 处理连接，工具描述影响可用性，格式约束提高互操作性，[[模型评测]]检查最终效果。\n\n## 阅读练习\n\n做一个简单阅读检查：某条输出是否能被程序解析、是否满足字段类型、是否指向有效来源、结论是否得到原文支持。每一项都能单独失败，应给出不同反馈。这个练习有助于理解为什么提高格式可靠性仍然需要事实核查，也提醒未来的数据录入流程保留人工修订入口。\n\n## 原始来源\n\n- [S1](https://openai.com/index/function-calling-and-other-api-updates/) · Function calling and other API updates · OpenAI · 2023-06-13\n- [S2](https://openai.com/index/introducing-structured-outputs-in-the-api/) · Introducing Structured Outputs in the API · OpenAI · 2024-08-06",
+    "tags": [
+      "方法层",
+      "结构化输出",
+      "工具调用",
+      "JSON Schema",
+      "OpenAI"
+    ],
+    "prerequisites": [
+      "工具调用",
+      "结构化输出"
+    ],
+    "aliases": [
+      "Function calling",
+      "Structured Outputs",
+      "受约束解码"
+    ],
+    "source": "https://openai.com/index/function-calling-and-other-api-updates/",
+    "sources": [
+      {
+        "title": "Function calling and other API updates",
+        "url": "https://openai.com/index/function-calling-and-other-api-updates/",
+        "publisher": "OpenAI",
+        "publishedAt": "2023-06-13"
+      },
+      {
+        "title": "Introducing Structured Outputs in the API",
+        "url": "https://openai.com/index/introducing-structured-outputs-in-the-api/",
+        "publisher": "OpenAI",
+        "publishedAt": "2024-08-06"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "OpenAI"
+    ],
+    "relations": [
+      {
+        "target": "结构化输出",
+        "kind": "explains"
+      },
+      {
+        "target": "工具调用",
+        "kind": "applies"
+      },
+      {
+        "target": "模型评测",
+        "kind": "applies"
+      },
+      {
+        "target": "工具设计与 MCP：连接能力和使用能力是两回事",
+        "kind": "extends"
+      }
+    ]
+  },
+  {
+    "title": "DeepSeek-V2 与 DeepSeekMoE：容量和计算分开增长",
+    "collection": "前沿研究",
+    "summary": "从专家细分、共享专家与 MLA 理解 DeepSeek 如何分别降低前馈计算和注意力缓存成本。",
+    "overview": "MoE 用少量激活专家提供更大参数容量；MLA 压缩推理缓存。两者优化的是不同资源，不能仅用总参数量判断部署成本。",
+    "content": "## 要解决的问题\n\n模型参数越多，训练、显存与推理成本通常越高，但这些成本不是同一个量。DeepSeekMoE 研究细分路由专家与隔离共享专家，让公共知识与专门化计算分工，减少专家之间的冗余。[S1](https://arxiv.org/abs/2401.06066)\n\n## 机制与证据\n\n[[混合专家模型]]每个[[Token]]只激活部分专家，因而总参数量与单次计算量可以分开。V2 同时采用 DeepSeekMoE 和[[多头潜在注意力]]：后者把注意力所需的键值缓存压缩成潜在表示。论文报告 V2 共 236B 参数、每个 Token 激活 21B，并在指定基线与测量条件下减少缓存和提高吞吐。这些结果分别对应参数容量、计算与存储三个维度。[S2](https://arxiv.org/abs/2405.04434)\n\n## 边界与学习连接\n\n不能把激活参数量直接当成实际显存需求，未激活的专家权重仍需存储或调度；路由、通信、批量大小与硬件也影响速度。缓存压缩改善长序列服务的资源压力，不代表自动具备更强的长期[[记忆机制]]。可与[[Switch 与 GShard：稀疏模型为什么仍需要系统工程]]对比专家路由，再沿[[DeepSeek-V3：专家负载均衡也是学习问题]]了解分配策略。这里的先后顺序是研究演进，不能当作学习 Agent 应用必须掌握的全部前置条件。\n\n## 阅读练习\n\n比较模型时，尝试为每个资源数字补上单位和测量条件：说的是权重、缓存、训练计算，还是生成吞吐。将硬件、序列长度与批量设置一起记录；若论文没有给出足够信息，就保留未知。这样可以避免把一种优化误读成所有成本同时下降，也能发现不同实验之间能否公平比较。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2401.06066) · DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models · DeepSeek · 2024-01-11\n- [S2](https://arxiv.org/abs/2405.04434) · DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model · DeepSeek · 2024-05-07",
+    "tags": [
+      "模型层",
+      "混合专家模型",
+      "多头潜在注意力",
+      "DeepSeek",
+      "推理效率"
+    ],
+    "prerequisites": [
+      "Transformer",
+      "注意力机制",
+      "混合专家模型"
+    ],
+    "aliases": [
+      "DeepSeek V2",
+      "DeepSeekMoE",
+      "MLA",
+      "MoE"
+    ],
+    "source": "https://arxiv.org/abs/2401.06066",
+    "sources": [
+      {
+        "title": "DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models",
+        "url": "https://arxiv.org/abs/2401.06066",
+        "publisher": "DeepSeek",
+        "publishedAt": "2024-01-11"
+      },
+      {
+        "title": "DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model",
+        "url": "https://arxiv.org/abs/2405.04434",
+        "publisher": "DeepSeek",
+        "publishedAt": "2024-05-07"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "DeepSeek"
+    ],
+    "relations": [
+      {
+        "target": "混合专家模型",
+        "kind": "explains"
+      },
+      {
+        "target": "多头潜在注意力",
+        "kind": "explains"
+      },
+      {
+        "target": "记忆机制",
+        "kind": "contrasts"
+      },
+      {
+        "target": "DeepSeek-V3：专家负载均衡也是学习问题",
+        "kind": "extends"
+      }
+    ]
+  },
+  {
+    "title": "DeepSeek-V3：专家负载均衡也是学习问题",
+    "collection": "前沿研究",
+    "summary": "把独立的无辅助损失均衡研究与 V3 技术报告连起来，理解路由质量、训练目标和系统效率的共同作用。",
+    "overview": "路由既要把 Token 分给合适专家，也要避免少数专家过载。动态偏置为负载调节提供途径，但整套模型收益不能归于单一技巧。",
+    "content": "## 要解决的问题\n\n[[混合专家模型]]只激活少量专家，却可能出现部分专家过忙、其他专家空闲的问题。传统辅助损失鼓励均衡，但它产生的梯度也可能干扰语言建模目标。独立研究提出在选择专家前加入按近期负载更新的专家偏置，以调节分配。[S1](https://arxiv.org/abs/2408.15664)\n\n## 机制与证据\n\n该方法通过路由偏置影响专家选择，让负载控制不再完全依赖额外的训练梯度。论文在其规模与训练设置内比较了模型表现和负载均衡。V3 在更大的[[多头潜在注意力]]与 DeepSeekMoE 架构上采用这种策略，同时结合多 Token 预测和训练系统优化；报告模型总参数 671B、每个 Token 激活 37B。[S2](https://arxiv.org/abs/2412.19437)\n\n## 边界与学习连接\n\n“无辅助损失”是主要均衡策略的名称，不应推导成整个训练完全没有其他均衡约束。V3 是多项改动共同组成的系统，训练效率和基准结果不能全部归因于路由偏置。报告中的 GPU 时数也不代表完整研发预算，更不能直接类比个人电脑部署成本。沿[[DeepSeek-V2 与 DeepSeekMoE：容量和计算分开增长]]理解结构，再连接[[Token]]与[[模型评测]]，可以形成从模型机制到资源条件、再到任务证据的横向阅读路径。\n\n## 阅读练习\n\n沿来源阅读时，分别记录路由方法自身的对照实验和完整模型的综合结果；再标出哪些变化同时发生。对任何效率数字都追问基线、硬件与统计范围，而不要立刻换算成个人使用成本。这个练习能把机制解释和工程预算分开，使图谱里的“改进”关系保持可追溯的适用条件。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2408.15664) · Auxiliary-Loss-Free Load Balancing Strategy for Mixture-of-Experts · DeepSeek / Peking University · 2024-08-28\n- [S2](https://arxiv.org/abs/2412.19437) · DeepSeek-V3 Technical Report · DeepSeek · 2024-12-27",
+    "tags": [
+      "模型层",
+      "混合专家模型",
+      "负载均衡",
+      "DeepSeek",
+      "训练效率"
+    ],
+    "prerequisites": [
+      "混合专家模型",
+      "多头潜在注意力"
+    ],
+    "aliases": [
+      "DeepSeek V3",
+      "Loss-Free Balancing",
+      "专家路由"
+    ],
+    "source": "https://arxiv.org/abs/2408.15664",
+    "sources": [
+      {
+        "title": "Auxiliary-Loss-Free Load Balancing Strategy for Mixture-of-Experts",
+        "url": "https://arxiv.org/abs/2408.15664",
+        "publisher": "DeepSeek / Peking University",
+        "publishedAt": "2024-08-28"
+      },
+      {
+        "title": "DeepSeek-V3 Technical Report",
+        "url": "https://arxiv.org/abs/2412.19437",
+        "publisher": "DeepSeek",
+        "publishedAt": "2024-12-27"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "DeepSeek"
+    ],
+    "relations": [
+      {
+        "target": "混合专家模型",
+        "kind": "extends"
+      },
+      {
+        "target": "多头潜在注意力",
+        "kind": "applies"
+      },
+      {
+        "target": "模型评测",
+        "kind": "evaluates"
+      },
+      {
+        "target": "DeepSeek-V2 与 DeepSeekMoE：容量和计算分开增长",
+        "kind": "extends"
+      }
+    ]
+  },
+  {
+    "title": "DeepSeek-R1 与 DeepSeekMath：奖励怎样塑造推理",
+    "collection": "前沿研究",
+    "summary": "比较 DeepSeekMath 的 GRPO 与 R1 的训练流程，理解结果奖励、冷启动、蒸馏及其适用边界。",
+    "overview": "可检查答案为推理学习提供奖励信号。R1-Zero 与 R1 的训练流程不同，不能把前者的纯强化学习实验直接套到后者的完整产品模型。",
+    "content": "## 要解决的问题\n\n如果每道复杂问题都要人工书写完整推理过程，训练数据成本很高。DeepSeekMath 将数学数据筛选与[[强化学习]]结合，并提出 GRPO：用一组候选回答的相对奖励估计改进方向，降低对独立价值模型的依赖。[S1](https://arxiv.org/abs/2402.03300)\n\n## 机制与证据\n\nR1 初版报告分别研究 R1-Zero 与 R1。前者直接在基础模型上进行强化学习，出现自我检查等行为，也暴露可读性与语言混杂问题；后者加入冷启动数据、拒绝采样与后续训练，兼顾推理和更广场景，并把大模型生成的数据用于小模型蒸馏。因此，“纯强化学习”描述的是特定实验路线，不能概括完整 R1 流程。[S2](https://arxiv.org/html/2501.12948v1)\n\n## 边界与学习连接\n\n数学、程序等可验证任务更容易设计结果奖励，开放研究、审美或真实经营任务往往没有同样清晰的判定器。生成了长[[思维链]]也不能保证结论正确；蒸馏的有效性同样依赖数据和底座。本文固定引用 2025 年初版，避免把后续修订与初始结论混在一起。关联[[从人类偏好到指令遵循：RLHF 如何改变模型行为]]，比较奖励来源；关联[[OpenAI o1：把计算预算放到回答之前]]，比较训练时强化学习与推理时预算，而不是仅按模型名称分类。\n\n## 阅读练习\n\n尝试给奖励信号分类：答案是否可直接检查、是否需要人类比较、是否只能让另一个模型打分。然后记录每种信号可能漏掉什么。这能帮助理解为什么数学与代码研究中的训练路线不能原样推广到开放任务，也能把奖励设计、结果验证和推理行为连成多条不同的知识关系。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2402.03300) · DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models · DeepSeek · 2024-02-05\n- [S2](https://arxiv.org/html/2501.12948v1) · DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (v1) · DeepSeek · 2025-01-22",
+    "tags": [
+      "模型层",
+      "强化学习",
+      "推理模型",
+      "GRPO",
+      "DeepSeek"
+    ],
+    "prerequisites": [
+      "强化学习",
+      "推理模型",
+      "思维链"
+    ],
+    "aliases": [
+      "DeepSeek R1",
+      "DeepSeekMath",
+      "GRPO",
+      "R1-Zero",
+      "推理蒸馏"
+    ],
+    "source": "https://arxiv.org/abs/2402.03300",
+    "sources": [
+      {
+        "title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+        "url": "https://arxiv.org/abs/2402.03300",
+        "publisher": "DeepSeek",
+        "publishedAt": "2024-02-05"
+      },
+      {
+        "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (v1)",
+        "url": "https://arxiv.org/html/2501.12948v1",
+        "publisher": "DeepSeek",
+        "publishedAt": "2025-01-22"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "DeepSeek"
+    ],
+    "relations": [
+      {
+        "target": "强化学习",
+        "kind": "applies"
+      },
+      {
+        "target": "思维链",
+        "kind": "extends"
+      },
+      {
+        "target": "推理模型",
+        "kind": "explains"
+      },
+      {
+        "target": "从人类偏好到指令遵循：RLHF 如何改变模型行为",
+        "kind": "contrasts"
+      },
+      {
+        "target": "OpenAI o1：把计算预算放到回答之前",
+        "kind": "contrasts"
+      }
+    ]
+  },
+  {
+    "title": "Transformer 与 Universal Transformer：信息交互和重复计算",
+    "collection": "前沿研究",
+    "summary": "把原始 Transformer 与 Universal Transformer 对照，理解注意力、位置表示以及跨深度重复计算的区别。",
+    "overview": "注意力决定信息如何交互，网络结构决定交互重复多少次。原始翻译结果不能直接推出通用推理能力，自适应计算也是独立研究问题。",
+    "content": "## 要解决的问题\n\n序列模型既要连接相隔很远的信息，也要有效利用并行硬件。原始 [[Transformer]] 用[[注意力机制]]替代序列上的循环与卷积，通过多头注意力、前馈网络与位置表示处理序列，在机器翻译任务中验证质量和训练效率。[S1](https://arxiv.org/abs/1706.03762)\n\n## 机制与证据\n\n注意力让一个位置按内容选择其他位置的信息；多头提供不同的表示子空间，位置编码补充次序。后续 Universal Transformer 则在深度方向重复应用共享变换，并研究按位置动态停止的机制，希望结合并行信息交互与循环计算的归纳偏置。论文在算法任务、语言建模和翻译等设置中比较了效果。[S2](https://arxiv.org/abs/1807.03819)\n\n## 边界与学习连接\n\n原始论文的直接证据主要来自翻译等特定任务，不能凭架构名称断言它已经理解所有领域。Universal Transformer 的理论计算能力依赖文中假设，也不代表实际模型总能完成任意程序。两者说明“读哪些信息”和“反复加工几次”可以分开研究。前者连接[[上下文窗口]]，后者可与[[推理模型]]形成概念对照，但不能说二者是同一种技术。\n\n## 学习时如何读\n\n先画出 Token 表示怎样进入注意力，再标出前馈网络与重复层；第二遍只比较两种模型是否共享参数、在哪里重复、怎样结束。这样可以把结构证据与训练规模、数据差异拆开。原始 Transformer 来自当时的 Google Brain / Google Research；Universal Transformer 包含 Google Brain、DeepMind 与大学作者，机构关系沿用论文发表时的归属。\n\n## 阅读练习\n\n进一步记录每次结构变化究竟改变信息路径、参数共享还是计算次数，避免把外观相似的流程误当作相同机制。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/1706.03762) · Attention Is All You Need · Google (Google Brain / Google Research) · 2017-06-12\n- [S2](https://arxiv.org/abs/1807.03819) · Universal Transformers · Google Brain / DeepMind / University of Amsterdam · 2018-07-10",
+    "tags": [
+      "基础层",
+      "Transformer",
+      "注意力机制",
+      "Google",
+      "Google DeepMind"
+    ],
+    "prerequisites": [
+      "Token",
+      "注意力机制"
+    ],
+    "aliases": [
+      "Attention Is All You Need",
+      "Universal Transformer",
+      "自注意力"
+    ],
+    "source": "https://arxiv.org/abs/1706.03762",
+    "sources": [
+      {
+        "title": "Attention Is All You Need",
+        "url": "https://arxiv.org/abs/1706.03762",
+        "publisher": "Google (Google Brain / Google Research)",
+        "publishedAt": "2017-06-12"
+      },
+      {
+        "title": "Universal Transformers",
+        "url": "https://arxiv.org/abs/1807.03819",
+        "publisher": "Google Brain / DeepMind / University of Amsterdam",
+        "publishedAt": "2018-07-10"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Google",
+      "Google DeepMind"
+    ],
+    "relations": [
+      {
+        "target": "Transformer",
+        "kind": "explains"
+      },
+      {
+        "target": "注意力机制",
+        "kind": "explains"
+      },
+      {
+        "target": "上下文窗口",
+        "kind": "applies"
+      },
+      {
+        "target": "推理模型",
+        "kind": "contrasts"
+      },
+      {
+        "target": "残差连接与归一化：深层网络如何保持可训练",
+        "kind": "extends"
+      }
+    ]
+  },
+  {
+    "title": "残差连接与归一化：深层网络如何保持可训练",
+    "collection": "前沿研究",
+    "summary": "从 ResNet 原始研究到 Transformer 与 T5，区分信息捷径、数值尺度和完整模型效果。",
+    "overview": "残差连接把输入与学习到的变化相加；归一化调整中间表示的尺度。它们常一起出现，却不是同一个机制，也不是知识图谱里的文档链接。",
+    "content": "## 要解决的问题\n\n网络加深后，优化可能变难，训练误差也未必下降。ResNet 把目标改写成对输入的残差修正，让网络学习增量并通过捷径保留输入；原始证据来自图像识别。该论文出自 Microsoft Research，不能归给 Google 或 DeepMind。[S1](https://arxiv.org/abs/1512.03385)\n\n## 机制与证据\n\n可以用“输出等于输入加上学习的变化”理解[[残差连接]]。[[归一化]]则处理表示的数值尺度；原始 Transformer 在子层周围结合残差与层归一化。[S2](https://arxiv.org/abs/1706.03762) T5 改为对子层输入做归一化，并采用简化形式和不同位置表示。论文明确说这些架构修改没有在该研究里单独消融，因此不能声称某一个归一化改动解释了 T5 的全部提升。[S3](https://arxiv.org/html/1910.10683v4)\n\n## 边界与学习连接\n\n捷径不保证任意深度都容易训练，归一化也不会自动纠正事实错误。它们属于[[Transformer]]内部的计算结构，而[[双向链接]]连接的是文档概念，两种“连接”发生在不同层次。把这条跨领域链放入[[知识图谱]]，可以展示一种基础机制怎样从视觉研究进入语言模型，而不强行把它排成唯一学习路线。\n\n## 学习时如何读\n\n阅读时把相加的位置、归一化的位置、可学习参数分别标出来，再检查论文真正比较了什么。若没有单独实验，就把效果记为整套配置的结果；若只是概念类比，就明确保留为自己的理解。这样能避免把常见组件误当成一条已被证明的性能因果链。\n\n## 阅读练习\n\n若想进一步学习，可以从归一化所在位置画两张计算图，再注明没有独立实验支持的性能判断，保留待验证的问题。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/1512.03385) · Deep Residual Learning for Image Recognition · Microsoft Research · 2015-12-10\n- [S2](https://arxiv.org/abs/1706.03762) · Attention Is All You Need · Google (Google Brain / Google Research) · 2017-06-12\n- [S3](https://arxiv.org/html/1910.10683v4) · Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer · Google · 2019-10-23",
+    "tags": [
+      "基础层",
+      "残差连接",
+      "归一化",
+      "Transformer",
+      "Google"
+    ],
+    "prerequisites": [
+      "Transformer",
+      "残差连接",
+      "归一化"
+    ],
+    "aliases": [
+      "Residual connection",
+      "ResNet",
+      "LayerNorm",
+      "Pre-LN",
+      "T5"
+    ],
+    "source": "https://arxiv.org/abs/1512.03385",
+    "sources": [
+      {
+        "title": "Deep Residual Learning for Image Recognition",
+        "url": "https://arxiv.org/abs/1512.03385",
+        "publisher": "Microsoft Research",
+        "publishedAt": "2015-12-10"
+      },
+      {
+        "title": "Attention Is All You Need",
+        "url": "https://arxiv.org/abs/1706.03762",
+        "publisher": "Google (Google Brain / Google Research)",
+        "publishedAt": "2017-06-12"
+      },
+      {
+        "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+        "url": "https://arxiv.org/html/1910.10683v4",
+        "publisher": "Google",
+        "publishedAt": "2019-10-23"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Google"
+    ],
+    "relations": [
+      {
+        "target": "残差连接",
+        "kind": "explains"
+      },
+      {
+        "target": "归一化",
+        "kind": "explains"
+      },
+      {
+        "target": "Transformer",
+        "kind": "applies"
+      },
+      {
+        "target": "双向链接",
+        "kind": "contrasts"
+      },
+      {
+        "target": "知识图谱",
+        "kind": "applies"
+      }
+    ]
+  },
+  {
+    "title": "Switch 与 GShard：稀疏模型为什么仍需要系统工程",
+    "collection": "前沿研究",
+    "summary": "两项 Google 研究说明，专家稀疏激活可以扩充容量，但路由、分片、通信与稳定性共同决定实际效率。",
+    "overview": "GShard 连接条件计算与自动分片，Switch 简化专家路由。总参数、激活计算量、通信与内存需要分别记录，不能混为一个成本数字。",
+    "content": "## 要解决的问题\n\n让模型拥有更多参数，同时不让每个输入都使用全部参数，是[[混合专家模型]]的基本动机。GShard 把稀疏专家与自动分片结合，在跨设备训练中表达并行计算，并在多语言翻译上验证大规模模型。[S1](https://arxiv.org/abs/2006.16668)\n\n## 机制与证据\n\n路由器为每个 [[Token]]选择部分专家，专家可以理解成被选择执行的前馈子网络。Switch Transformer 进一步简化路由，在通信、计算和训练稳定性之间做取舍，并研究较低精度训练。它报告在给定模型与资源条件下提高预训练速度，同时把规模扩展到很大的参数容量。[S2](https://arxiv.org/abs/2101.03961)\n\n## 边界与学习连接\n\n稀疏计算不等于所有成本都按同样比例下降。权重存储、跨设备传输、路由开销和专家分布仍可能成为瓶颈；论文中的加速依赖其基线、训练目标和硬件设置，不能直接迁移成通用服务速度。两项工作发表时属于 Google；不能因为后来团队整合而把历史来源都改写成 Google DeepMind。\n\n## 学习时如何读\n\n可以把每个模型记成一组维度：总参数、激活参数、训练计算、内存、通信和任务表现。只比较“多少 B”会掩盖关键差异。继续阅读[[DeepSeek-V2 与 DeepSeekMoE：容量和计算分开增长]]，观察专家细分与共享设计；再读[[DeepSeek-V3：专家负载均衡也是学习问题]]，比较路由的优化目标。它们是对同一问题的不同处理，不表示后来的方案在所有条件下都占优。\n\n## 阅读练习\n\n阅读硬件结果时，应同时检查比较对象是否具有相同训练目标与资源预算，把不可直接比较的数字保留原始上下文。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2006.16668) · GShard: Scaling Giant Models with Conditional Computation and Automatic Sharding · Google · 2020-06-30\n- [S2](https://arxiv.org/abs/2101.03961) · Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity · Google · 2021-01-11",
+    "tags": [
+      "模型层",
+      "混合专家模型",
+      "专家路由",
+      "并行训练",
+      "Google"
+    ],
+    "prerequisites": [
+      "Transformer",
+      "混合专家模型",
+      "Token"
+    ],
+    "aliases": [
+      "Switch Transformer",
+      "GShard",
+      "Sparse MoE",
+      "稀疏激活"
+    ],
+    "source": "https://arxiv.org/abs/2006.16668",
+    "sources": [
+      {
+        "title": "GShard: Scaling Giant Models with Conditional Computation and Automatic Sharding",
+        "url": "https://arxiv.org/abs/2006.16668",
+        "publisher": "Google",
+        "publishedAt": "2020-06-30"
+      },
+      {
+        "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+        "url": "https://arxiv.org/abs/2101.03961",
+        "publisher": "Google",
+        "publishedAt": "2021-01-11"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Google"
+    ],
+    "relations": [
+      {
+        "target": "混合专家模型",
+        "kind": "explains"
+      },
+      {
+        "target": "Transformer",
+        "kind": "extends"
+      },
+      {
+        "target": "模型评测",
+        "kind": "evaluates"
+      },
+      {
+        "target": "DeepSeek-V2 与 DeepSeekMoE：容量和计算分开增长",
+        "kind": "contrasts"
+      },
+      {
+        "target": "DeepSeek-V3：专家负载均衡也是学习问题",
+        "kind": "contrasts"
+      }
+    ]
+  },
+  {
+    "title": "思维链与自洽性：从一条路径到多条候选",
+    "collection": "前沿研究",
+    "summary": "Google 的两篇研究分别改变提示内容和解码策略，帮助区分展示中间步骤、采样多个答案与训练模型。",
+    "overview": "思维链示例鼓励分步生成，自洽性从多条候选推理路径聚合答案。收益取决于模型、任务与采样预算，重复生成不代表独立求证。",
+    "content": "## 要解决的问题\n\n直接输出答案可能遗漏中间运算。[[思维链]]提示研究把分步推理示例放入提示，让模型仿照示例生成过程，再回答问题；它在算术、常识与符号任务上研究了收益。[S1](https://arxiv.org/abs/2201.11903)\n\n## 机制与证据\n\n这里首先改变的是输入中的[[少样本学习]]示例，并没有重新训练模型。自洽性研究进一步改变解码：采样多条不同的推理路径，再聚合最终答案，而不是只取一次贪心生成。论文在多项推理基准中报告改善，说明候选搜索与答案选择也影响最终表现。[S2](https://arxiv.org/abs/2203.11171)\n\n## 边界与学习连接\n\n多条路径可能共享同一个错误前提，答案一致不等于证据独立。可见的分步文字也不是模型内部机制的完整证明。自洽性通常需要更多采样，评测时必须一起记录次数、预算与任务类型；开放问题还可能不存在可归并的唯一答案。学习时应把[[提示词工程]]、[[强化学习]]和推理时搜索分开：它们分别改变输入、参数或计算过程。\n\n## 学习时如何读\n\n把同一道可检查答案的问题分别交给直接作答、单次分步与多次采样流程，记录结果和成本，才能判断策略对自己的任务是否有效。这个实验思路是阅读延伸，不是对任意模型收益的保证。与[[OpenAI o1：把计算预算放到回答之前]]和[[DeepSeek-R1 与 DeepSeekMath：奖励怎样塑造推理]]交叉阅读，可以看到相似的“推理”现象背后存在不同训练与运行机制。\n\n## 阅读练习\n\n把每条候选推理的答案和依据分开记录，还能看见答案一致时是否只是重复同一个未经核实的假设。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2201.11903) · Chain-of-Thought Prompting Elicits Reasoning in Large Language Models · Google · 2022-01-28\n- [S2](https://arxiv.org/abs/2203.11171) · Self-Consistency Improves Chain of Thought Reasoning in Language Models · Google · 2022-03-21",
+    "tags": [
+      "方法层",
+      "思维链",
+      "少样本学习",
+      "自洽性",
+      "Google"
+    ],
+    "prerequisites": [
+      "提示词工程",
+      "少样本学习",
+      "思维链"
+    ],
+    "aliases": [
+      "Chain-of-Thought",
+      "CoT",
+      "Self-consistency",
+      "自洽性采样"
+    ],
+    "source": "https://arxiv.org/abs/2201.11903",
+    "sources": [
+      {
+        "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+        "url": "https://arxiv.org/abs/2201.11903",
+        "publisher": "Google",
+        "publishedAt": "2022-01-28"
+      },
+      {
+        "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+        "url": "https://arxiv.org/abs/2203.11171",
+        "publisher": "Google",
+        "publishedAt": "2022-03-21"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Google"
+    ],
+    "relations": [
+      {
+        "target": "思维链",
+        "kind": "explains"
+      },
+      {
+        "target": "少样本学习",
+        "kind": "applies"
+      },
+      {
+        "target": "提示词工程",
+        "kind": "extends"
+      },
+      {
+        "target": "强化学习",
+        "kind": "contrasts"
+      },
+      {
+        "target": "OpenAI o1：把计算预算放到回答之前",
+        "kind": "contrasts"
+      }
+    ]
+  },
+  {
+    "title": "ReAct 与 WebAgent：让行动带回新证据",
+    "collection": "前沿研究",
+    "summary": "从推理与行动交替到网页任务模块化，理解 Agent 如何借助外部反馈继续规划，而不只生成一份计划。",
+    "overview": "ReAct 让推理、行动和观察交替；WebAgent 把网页规划、相关内容提取与程序生成分工。环境反馈是连接语言模型和真实任务的重要环节。",
+    "content": "## 要解决的问题\n\n只在文本中连续推理，可能把最初的错误不断放大；只生成行动，又可能缺少计划更新。ReAct 把推理轨迹与任务行动交替生成，让模型通过检索或环境操作获得新观察，再决定下一步。[S1](https://arxiv.org/abs/2210.03629)\n\n## 机制与证据\n\n在知识问答中，行动可以查询外部资料；在交互任务中，行动改变环境并返回反馈。ReAct 在问答、事实核查和交互基准中比较这类循环。WebAgent 进一步针对真实网页，把任务拆解、长 HTML 中的相关片段提取，以及程序生成组合起来，让专门模型与通用模型分工处理不同瓶颈。[S2](https://arxiv.org/abs/2307.12856)\n\n## 边界与学习连接\n\n结果依赖工具、任务与测试网站，不能推断任意网页自动化都可靠。页面改变、定位失败或反馈不清楚，都可能让循环走偏。ReAct 是 Princeton 与 Google 合作；WebAgent 包含 Google DeepMind 与东京大学作者，机构归属应按原始论文保留。把这两篇连接[[AI Agent]]、[[工具调用]]和[[上下文工程]]，能够区分“模型知道什么”和“它能从环境获得什么”。\n\n## 学习时如何读\n\n画出目标、行动、观察、状态更新四个环节，并检查失败发生在哪一步。对知识库，检索到新文章之后修改阅读方向就是一种直观类比；这只是帮助理解，不表示当前产品已经自动规划或执行研究。继续读[[从工作流到自主 Agent：何时值得增加复杂度]]，可以再判断是否真的需要自由循环，还是固定检索与阅读步骤已足够。\n\n## 阅读练习\n\n另外可以把每次行动的输入与观察写成一条轨迹；轨迹能够帮助回看失败位置，但本身还不等于对结果正确性的证明。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2210.03629) · ReAct: Synergizing Reasoning and Acting in Language Models · Princeton University / Google · 2022-10-06\n- [S2](https://arxiv.org/abs/2307.12856) · A Real-World WebAgent with Planning, Long Context Understanding, and Program Synthesis · Google DeepMind / University of Tokyo · 2023-07-24",
+    "tags": [
+      "应用层",
+      "AI Agent",
+      "工具调用",
+      "网页自动化",
+      "Google",
+      "Google DeepMind"
+    ],
+    "prerequisites": [
+      "AI Agent",
+      "工具调用",
+      "上下文窗口"
+    ],
+    "aliases": [
+      "ReAct",
+      "Reason Act Observe",
+      "WebAgent",
+      "HTML-T5"
+    ],
+    "source": "https://arxiv.org/abs/2210.03629",
+    "sources": [
+      {
+        "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+        "url": "https://arxiv.org/abs/2210.03629",
+        "publisher": "Princeton University / Google",
+        "publishedAt": "2022-10-06"
+      },
+      {
+        "title": "A Real-World WebAgent with Planning, Long Context Understanding, and Program Synthesis",
+        "url": "https://arxiv.org/abs/2307.12856",
+        "publisher": "Google DeepMind / University of Tokyo",
+        "publishedAt": "2023-07-24"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Google",
+      "Google DeepMind"
+    ],
+    "relations": [
+      {
+        "target": "AI Agent",
+        "kind": "explains"
+      },
+      {
+        "target": "工具调用",
+        "kind": "applies"
+      },
+      {
+        "target": "上下文工程",
+        "kind": "applies"
+      },
+      {
+        "target": "从工作流到自主 Agent：何时值得增加复杂度",
+        "kind": "extends"
+      }
+    ]
+  },
+  {
+    "title": "REALM 与 RETRO：把知识放进可检索的外部记忆",
+    "collection": "前沿研究",
+    "summary": "比较 Google 的 REALM 与 DeepMind 的 RETRO，理解检索不仅可以接在模型外，也可以参与训练和模型结构。",
+    "overview": "REALM 研究联合学习知识检索，RETRO 用检索片段与分块交叉注意力增强生成。二者不能直接等同于“搜索几段文字再拼提示”的所有 RAG 系统。",
+    "content": "## 要解决的问题\n\n把知识全部存入参数，更新和追溯都不方便。REALM 在预训练中加入潜在知识检索器，通过语言建模信号学习从大文档库取回信息，并在开放域问答中验证效果。[S1](https://arxiv.org/abs/2002.08909)\n\n## 机制与证据\n\nRETRO 则按与前文的相似性检索语料片段，通过编码器和分块交叉[[注意力机制]]影响后续生成。其研究在大规模外部数据库上展示，检索增强可让较小参数模型在所测语言建模指标上达到大型参数模型的可比表现，并继续评估知识密集任务。[S2](https://arxiv.org/abs/2112.04426)\n\n## 边界与学习连接\n\n这两项工作把检索纳入训练或架构，不能把论文数字直接套到任意[[RAG]]应用。结果依赖检索语料、覆盖范围与评测条件；相似片段也可能过时、冲突或不支持答案。REALM 属于 Google，RETRO 发表时来自 DeepMind，这里按 Google DeepMind 的机构入口归档，同时保留历史名称。\n\n## 学习时如何读\n\n将检索系统拆成[[文档分块]]、[[向量嵌入]]、[[向量检索]]、信息使用与来源验证。对个人知识库，搜索命中解决的是“找到可能相关的文档”，引用核查解决的是“这篇文章是否支持这个说法”，两者需要不同判断。它们又能连接[[语义相似度]]、[[记忆机制]]与[[分层索引]]，让读者从应用层一路走到模型结构，而不把向量距离误当作事实可信度。\n\n## 阅读练习\n\n阅读延伸：同一个问题同时做关键词检索与语义检索，检查命中差异；再独立核查来源是否真正支持答案。这个练习能连接[[混合检索]]与证据判断，避免只因为搜索结果相关就认为它可信。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2002.08909) · REALM: Retrieval-Augmented Language Model Pre-Training · Google · 2020-02-10\n- [S2](https://arxiv.org/abs/2112.04426) · Improving language models by retrieving from trillions of tokens · DeepMind (now Google DeepMind) · 2021-12-08",
+    "tags": [
+      "方法层",
+      "RAG",
+      "向量检索",
+      "记忆机制",
+      "Google",
+      "Google DeepMind"
+    ],
+    "prerequisites": [
+      "RAG",
+      "向量检索",
+      "文档分块"
+    ],
+    "aliases": [
+      "REALM",
+      "RETRO",
+      "Retrieval augmented pretraining",
+      "检索增强预训练"
+    ],
+    "source": "https://arxiv.org/abs/2002.08909",
+    "sources": [
+      {
+        "title": "REALM: Retrieval-Augmented Language Model Pre-Training",
+        "url": "https://arxiv.org/abs/2002.08909",
+        "publisher": "Google",
+        "publishedAt": "2020-02-10"
+      },
+      {
+        "title": "Improving language models by retrieving from trillions of tokens",
+        "url": "https://arxiv.org/abs/2112.04426",
+        "publisher": "DeepMind (now Google DeepMind)",
+        "publishedAt": "2021-12-08"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Google",
+      "Google DeepMind"
+    ],
+    "relations": [
+      {
+        "target": "RAG",
+        "kind": "explains"
+      },
+      {
+        "target": "向量检索",
+        "kind": "applies"
+      },
+      {
+        "target": "记忆机制",
+        "kind": "extends"
+      },
+      {
+        "target": "文档分块",
+        "kind": "applies"
+      },
+      {
+        "target": "语义相似度",
+        "kind": "contrasts"
+      }
+    ]
+  },
+  {
+    "title": "从缩放定律到 Chinchilla：参数不是唯一的规模",
+    "collection": "前沿研究",
+    "summary": "对照 OpenAI 的经验缩放规律与 DeepMind 的算力最优研究，理解模型大小、训练数据和计算预算的共同约束。",
+    "overview": "缩放规律是对实验区域内关系的拟合。Chinchilla 将更多预算分配给训练 Token，提醒读者不要只按参数规模判断能力或效率。",
+    "content": "## 要解决的问题\n\n固定预算下，应该训练更大的模型，还是让较小模型读更多数据？OpenAI 的缩放研究观察交叉熵损失与参数、数据、训练计算之间的经验关系，并据此讨论计算分配。[S1](https://arxiv.org/abs/2001.08361)\n\n## 机制与证据\n\nDeepMind 的 Chinchilla 研究通过多组模型与训练 Token 组合重新估计预算分配，认为其研究范围内许多大模型训练数据不足。它用与 Gopher 相近的训练计算训练参数更小、数据更多的 Chinchilla，并在多项下游任务中验证效果。这说明“参数更多”不是固定算力下唯一值得增加的量。[S2](https://arxiv.org/abs/2203.15556)\n\n## 边界与学习连接\n\n[[缩放定律]]是受数据分布、训练配置和拟合范围影响的经验规律，不是对未来任意架构的物理定律。两篇文章也不是在完全相同设置中只改变一个变量。训练预算最优、推理服务成本最优和用户体验最优，并不天然一致；不能把某个 Token 与参数比例当成所有项目的固定公式。\n\n## 学习时如何读\n\n同时记录参数、训练 Token、数据来源、算力和[[模型评测]]条件，再判断研究优化的目标。将它与[[OpenAI o1：把计算预算放到回答之前]]连接，可以看到训练时投入和推理时投入之间还有另一条轴；与[[Switch 与 GShard：稀疏模型为什么仍需要系统工程]]连接，又能看到参数容量与激活计算的区别。这些横向关系让模型发展不再只是一条“越大越好”的时间线。\n\n## 阅读练习\n\n对于新的缩放结论，先找实验覆盖范围和拟合目标，再判断是否适用于自己关心的任务；图表之外的外推应保留为假设。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2001.08361) · Scaling Laws for Neural Language Models · OpenAI · 2020-01-23\n- [S2](https://arxiv.org/abs/2203.15556) · Training Compute-Optimal Large Language Models · DeepMind (now Google DeepMind) · 2022-03-29",
+    "tags": [
+      "基础层",
+      "缩放定律",
+      "训练数据",
+      "计算预算",
+      "OpenAI",
+      "Google DeepMind"
+    ],
+    "prerequisites": [
+      "大语言模型",
+      "Token",
+      "缩放定律"
+    ],
+    "aliases": [
+      "Chinchilla",
+      "Compute optimal",
+      "Scaling laws",
+      "算力最优"
+    ],
+    "source": "https://arxiv.org/abs/2001.08361",
+    "sources": [
+      {
+        "title": "Scaling Laws for Neural Language Models",
+        "url": "https://arxiv.org/abs/2001.08361",
+        "publisher": "OpenAI",
+        "publishedAt": "2020-01-23"
+      },
+      {
+        "title": "Training Compute-Optimal Large Language Models",
+        "url": "https://arxiv.org/abs/2203.15556",
+        "publisher": "DeepMind (now Google DeepMind)",
+        "publishedAt": "2022-03-29"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "OpenAI",
+      "Google DeepMind"
+    ],
+    "relations": [
+      {
+        "target": "缩放定律",
+        "kind": "explains"
+      },
+      {
+        "target": "Token",
+        "kind": "applies"
+      },
+      {
+        "target": "模型评测",
+        "kind": "evaluates"
+      },
+      {
+        "target": "OpenAI o1：把计算预算放到回答之前",
+        "kind": "contrasts"
+      },
+      {
+        "target": "Switch 与 GShard：稀疏模型为什么仍需要系统工程",
+        "kind": "contrasts"
+      }
+    ]
+  },
+  {
+    "title": "AlphaCode 系列：生成候选、运行检查与最终评测",
+    "collection": "前沿研究",
+    "summary": "DeepMind 的代码研究展示模型生成与搜索筛选的配合，也说明单次答案、系统成绩和真实工作表现必须分开。",
+    "overview": "先生成多种代码候选，再依据执行行为过滤、聚类并选择提交。系统表现来自模型与搜索组合，不能直接代表一次调用的可靠性。",
+    "content": "## 要解决的问题\n\n竞争编程不只要求把文字翻成代码，还要找到算法、处理约束并输出正确程序。AlphaCode 把经过清理的训练数据、大规模模型采样，以及基于程序行为的候选过滤组成系统，在模拟竞赛中评估排名。[S1](https://arxiv.org/abs/2203.07814)\n\n## 机制与证据\n\nAlphaCode 2 使用 Gemini 系列模型生成多样候选，再过滤、按行为聚类并排序选择，报告在指定 Codeforces 评测中解决更多问题。关键不是“第一个答案就正确”，而是把[[大语言模型]]视为候选生成器，用可执行检查与选择机制提高有限提交机会的利用率。[S2](https://storage.googleapis.com/deepmind-media/AlphaCode2/AlphaCode2_Tech_Report.pdf)\n\n## 边界与学习连接\n\n通过给定测试不等于对所有输入正确；大量采样和筛选的计算成本也必须计入。竞赛排名依赖题目集合与评测协议，不能直接推断软件工程中的维护性、需求理解或安全性。原版 AlphaCode 发表时来自 DeepMind，第二版报告明确署名 Google DeepMind，保留这一历史区别有助于追溯研究演进。\n\n## 学习时如何读\n\n关注候选数、可用测试、最终提交数与成本，而不只看百分位。将它连接[[模型评测]]与[[工具调用]]，可以理解外部执行器既是工作工具，也能提供反馈；再与[[思维链与自洽性：从一条路径到多条候选]]对比，一种聚合答案一致性，一种利用程序执行行为。两者都增加搜索，但验证信号不同，因此不能互换解释。\n\n## 阅读练习\n\n也可以比较同样预算下的一次强模型回答和多次候选筛选，把最终准确率、总调用量与验证成本放在一起观察。\n\n## 原始来源\n\n- [S1](https://arxiv.org/abs/2203.07814) · Competition-Level Code Generation with AlphaCode · DeepMind (now Google DeepMind) · 2022-02-08\n- [S2](https://storage.googleapis.com/deepmind-media/AlphaCode2/AlphaCode2_Tech_Report.pdf) · AlphaCode 2 Technical Report · Google DeepMind · 2023-12-06",
+    "tags": [
+      "方法层",
+      "模型评测",
+      "代码生成",
+      "推理搜索",
+      "Google DeepMind"
+    ],
+    "prerequisites": [
+      "大语言模型",
+      "模型评测",
+      "工具调用"
+    ],
+    "aliases": [
+      "AlphaCode",
+      "AlphaCode 2",
+      "候选筛选",
+      "Codeforces"
+    ],
+    "source": "https://arxiv.org/abs/2203.07814",
+    "sources": [
+      {
+        "title": "Competition-Level Code Generation with AlphaCode",
+        "url": "https://arxiv.org/abs/2203.07814",
+        "publisher": "DeepMind (now Google DeepMind)",
+        "publishedAt": "2022-02-08"
+      },
+      {
+        "title": "AlphaCode 2 Technical Report",
+        "url": "https://storage.googleapis.com/deepmind-media/AlphaCode2/AlphaCode2_Tech_Report.pdf",
+        "publisher": "Google DeepMind",
+        "publishedAt": "2023-12-06"
+      }
+    ],
+    "noteType": "research",
+    "organizations": [
+      "Google DeepMind"
+    ],
+    "relations": [
+      {
+        "target": "模型评测",
+        "kind": "explains"
+      },
+      {
+        "target": "工具调用",
+        "kind": "applies"
+      },
+      {
+        "target": "大语言模型",
+        "kind": "evaluates"
+      },
+      {
+        "target": "思维链与自洽性：从一条路径到多条候选",
+        "kind": "contrasts"
+      }
+    ]
+  }
+]

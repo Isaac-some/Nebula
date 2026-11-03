@@ -1,0 +1,573 @@
+[
+  {
+    "title": "残差连接",
+    "collection": "AI 学习",
+    "summary": "让一个模块学习对输入的修正，并通过捷径把输入加回输出，为深层网络的训练提供通路。",
+    "overview": "让一个模块学习对输入的修正，并通过捷径把输入加回输出，为深层网络的训练提供通路。\n\n建议先了解：[[Transformer]]。阅读完整内容可对照不同研究的设计与边界。",
+    "content": "## 从输入到“输入 + 修正”\n残差块常写成 y = x + F(x)：模块 F 学习修正，捷径保留输入。维度不同的时候，需要合适的投影。ResNet 原论文在图像识别中研究了这种结构，不能把它的起源归给 Transformer。[1]\n\n## 在语言模型中的位置\nT5 对 Transformer 的说明同样包含残差连接，但调整了层归一化的位置。残差连接与 [[注意力机制]] 是不同的模块：前者描述信息怎样跨层流动，后者描述怎样聚合序列信息。[2]\n\n## 学习顺序与边界\n先画出一层 [[Transformer]] 的注意力、前馈网络、残差与 [[归一化]]，再区分 Pre-Norm 和 Post-Norm。残差结构帮助训练，并不意味着每次加一条捷径都一定提升效果。T5 同时改变了多项配置，不能把整体结果全部归因于这一项。\n\n## 来源与核对\n[1] [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385) — Microsoft Research\n[2] [Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer](https://arxiv.org/abs/1910.10683) — Google",
+    "tags": [
+      "基础层",
+      "残差连接"
+    ],
+    "aliases": [
+      "Residual connection",
+      "Skip connection",
+      "残差",
+      "参差连接"
+    ],
+    "prerequisites": [
+      "Transformer"
+    ],
+    "source": "https://arxiv.org/abs/1512.03385",
+    "sources": [
+      {
+        "title": "Deep Residual Learning for Image Recognition",
+        "url": "https://arxiv.org/abs/1512.03385",
+        "publisher": "Microsoft Research"
+      },
+      {
+        "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+        "url": "https://arxiv.org/abs/1910.10683",
+        "publisher": "Google"
+      }
+    ],
+    "noteType": "concept",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "归一化",
+    "collection": "AI 学习",
+    "summary": "调整网络内部数值的尺度；在 Transformer 中，归一化的位置与残差路径共同影响训练行为。",
+    "overview": "调整网络内部数值的尺度；在 Transformer 中，归一化的位置与残差路径共同影响训练行为。\n\n建议先了解：[[Transformer]]、[[残差连接]]。阅读完整内容可对照不同研究的设计与边界。",
+    "content": "## 为什么不仅要看注意力\n原始 Transformer 在注意力和前馈子层外围使用 [[残差连接]] 与层归一化。经典示意写作 LayerNorm(x + Sublayer(x))，理解这条路径有助于读懂模型架构图。[1]\n\n## 不同结构的差别\nT5 把归一化放到子层输入，并使用不减去均值的简化形式。这说明“Transformer 都使用同一套层结构”并不准确；阅读论文时应明确归一化的位置与公式。[2]\n\n## 边界与连接\n归一化不是 [[向量嵌入]] 的语义标准化，也不是数据清洗。T5 的比较包含多项结构和训练差异，不能用其最终性能单独证明某个归一化改动的收益。将这篇与 [[Transformer]]、[[残差连接]] 一起阅读。\n\n## 来源与核对\n[1] [Attention Is All You Need](https://arxiv.org/abs/1706.03762) — Google\n[2] [Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer](https://arxiv.org/abs/1910.10683) — Google",
+    "tags": [
+      "基础层",
+      "归一化"
+    ],
+    "aliases": [
+      "Normalization",
+      "LayerNorm",
+      "层归一化",
+      "RMSNorm"
+    ],
+    "prerequisites": [
+      "Transformer",
+      "残差连接"
+    ],
+    "source": "https://arxiv.org/abs/1706.03762",
+    "sources": [
+      {
+        "title": "Attention Is All You Need",
+        "url": "https://arxiv.org/abs/1706.03762",
+        "publisher": "Google"
+      },
+      {
+        "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+        "url": "https://arxiv.org/abs/1910.10683",
+        "publisher": "Google"
+      }
+    ],
+    "noteType": "concept",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "混合专家模型",
+    "collection": "AI 学习",
+    "summary": "让路由器为每个输入选择部分专家，使模型总参数量与每次实际计算量可以分别扩展。",
+    "overview": "让路由器为每个输入选择部分专家，使模型总参数量与每次实际计算量可以分别扩展。\n\n建议先了解：[[Transformer]]。阅读完整内容可对照不同研究的设计与边界。",
+    "content": "## 参数多，不等于每次全用\n稀疏 MoE 层包含路由器和多个专家。每个 Token 只进入部分专家，因此应区分总参数量、激活参数量与实际计算开销。Switch Transformer 研究了简化的单专家路由，以及容量、负载和训练稳定性问题。[1]\n\n## 专家怎样分工\nDeepSeekMoE 探索更细粒度的专家划分与共享专家，目的是减少专家之间的知识冗余。它与 Switch 的具体设计不同，不能把所有 MoE 都视为同一种路由方案。[2]\n\n## 与其他知识的关系\n[[Token]] 是常见的路由单位，[[多头潜在注意力]] 则解决注意力缓存方面的问题。MoE 不会自动产生更好的 [[AI Agent]]；模型能力、部署带宽和任务评测仍需分别验证。\n\n## 来源与核对\n[1] [Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity](https://arxiv.org/abs/2101.03961) — Google\n[2] [DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models](https://arxiv.org/abs/2401.06066) — DeepSeek",
+    "tags": [
+      "模型层",
+      "混合专家模型"
+    ],
+    "aliases": [
+      "MoE",
+      "Mixture of Experts",
+      "稀疏专家"
+    ],
+    "prerequisites": [
+      "Transformer"
+    ],
+    "source": "https://arxiv.org/abs/2101.03961",
+    "sources": [
+      {
+        "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+        "url": "https://arxiv.org/abs/2101.03961",
+        "publisher": "Google"
+      },
+      {
+        "title": "DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models",
+        "url": "https://arxiv.org/abs/2401.06066",
+        "publisher": "DeepSeek"
+      }
+    ],
+    "noteType": "concept",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "多头潜在注意力",
+    "collection": "AI 学习",
+    "summary": "通过压缩并共享注意力所需的潜在表示，降低自回归推理时 KV 缓存的负担。",
+    "overview": "通过压缩并共享注意力所需的潜在表示，降低自回归推理时 KV 缓存的负担。\n\n建议先了解：[[注意力机制]]、[[Transformer]]。阅读完整内容可对照不同研究的设计与边界。",
+    "content": "## 它想解决什么\n语言模型逐步生成时，通常保留之前 Token 的 Key 和 Value，避免重复计算。这些 KV 缓存随着 [[上下文窗口]] 扩大，会成为显存与带宽负担。DeepSeek-V2 提出的 MLA 通过低秩联合压缩与相应的位置编码处理减少缓存开销。[1]\n\n## 与 MoE 区分开\nV2 与 V3 都将 MLA 和稀疏 [[混合专家模型]] 结合使用，但两者处理的成本不同：MLA 面向注意力表示与缓存，MoE 面向专家层的激活计算。V3 报告沿用 MLA，并增加其他训练与系统设计。[2]\n\n## 不应混淆的缓存\nKV 缓存是一种模型推理机制，产品接口中的 [[提示词缓存]] 是另一个使用层面。不能只凭压缩比例推断自己的端到端速度；实际收益还受硬件、实现、批量和上下文长度影响。\n\n## 来源与核对\n[1] [DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model](https://arxiv.org/abs/2405.04434) — DeepSeek\n[2] [DeepSeek-V3 Technical Report](https://arxiv.org/abs/2412.19437) — DeepSeek",
+    "tags": [
+      "模型层",
+      "多头潜在注意力"
+    ],
+    "aliases": [
+      "MLA",
+      "Multi-head Latent Attention",
+      "潜在注意力"
+    ],
+    "prerequisites": [
+      "注意力机制",
+      "Transformer"
+    ],
+    "source": "https://arxiv.org/abs/2405.04434",
+    "sources": [
+      {
+        "title": "DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model",
+        "url": "https://arxiv.org/abs/2405.04434",
+        "publisher": "DeepSeek"
+      },
+      {
+        "title": "DeepSeek-V3 Technical Report",
+        "url": "https://arxiv.org/abs/2412.19437",
+        "publisher": "DeepSeek"
+      }
+    ],
+    "noteType": "concept",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "强化学习",
+    "collection": "AI 学习",
+    "summary": "让策略根据奖励信号调整行为；在语言模型中，奖励可以来自人类偏好模型或可核验的任务结果。",
+    "overview": "让策略根据奖励信号调整行为；在语言模型中，奖励可以来自人类偏好模型或可核验的任务结果。\n\n建议先了解：[[大语言模型]]、[[模型评测]]。阅读完整内容可对照不同研究的设计与边界。",
+    "content": "## 语言模型怎样获得反馈\nOpenAI 的 InstructGPT 工作先用人类示范做监督训练，再收集输出偏好训练奖励模型，并用强化学习优化策略。这里的奖励表示特定反馈体系的判断，不等于普遍正确性。[1]\n\n## 推理能力的另一种训练路径\nDeepSeek-R1-Zero 研究在其基础模型上直接进行强化学习而不先做监督微调；R1 的完整流程则包含冷启动数据和多阶段训练。二者需要区分，不能把 R1 描述成“完全没有监督数据”。数学和代码等可核验奖励与一般主观偏好也不同。[2]\n\n## 与应用的边界\n[[推理模型]] 可以是强化学习的产物之一，但并非所有强化学习模型都是推理模型。改善一个奖励指标，可能仍会产生投机或迁移失败，需要独立的 [[模型评测]]。应用中的 [[AI Agent]] 试错循环，也不一定在更新模型权重。\n\n## 来源与核对\n[1] [Aligning language models to follow instructions](https://openai.com/index/instruction-following/) — OpenAI\n[2] [DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/abs/2501.12948) — DeepSeek",
+    "tags": [
+      "模型层",
+      "强化学习"
+    ],
+    "aliases": [
+      "RL",
+      "Reinforcement Learning",
+      "RLHF",
+      "奖励模型"
+    ],
+    "prerequisites": [
+      "大语言模型",
+      "模型评测"
+    ],
+    "source": "https://openai.com/index/instruction-following/",
+    "sources": [
+      {
+        "title": "Aligning language models to follow instructions",
+        "url": "https://openai.com/index/instruction-following/",
+        "publisher": "OpenAI"
+      },
+      {
+        "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+        "url": "https://arxiv.org/abs/2501.12948",
+        "publisher": "DeepSeek"
+      }
+    ],
+    "noteType": "concept",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "思维链",
+    "collection": "AI 学习",
+    "summary": "在提示或生成过程中展开中间推理步骤；它是一类方法，不能直接等同于模型内部的真实推理过程。",
+    "overview": "在提示或生成过程中展开中间推理步骤；它是一类方法，不能直接等同于模型内部的真实推理过程。\n\n建议先了解：[[提示词工程]]、[[少样本学习]]。阅读完整内容可对照不同研究的设计与边界。",
+    "content": "## 从直接回答到中间步骤\n思维链提示论文在若干推理任务中，给较大语言模型提供包含中间步骤的少样本示例，观察到任务表现改善。这是具体模型、任务和提示设置下的结果，并非任何问题写上“逐步思考”就一定更好。[1]\n\n## 多条路径与自洽性\n自洽性方法采样多条推理路径，再对最终答案做聚合。它增加了推理时的计算成本，与训练阶段的 [[强化学习]] 是不同的改进手段。[2]\n\n## 学习时怎样使用\n可以把同一道可验证问题分别做直接回答、带示例的思维链和多次采样，记录准确率与成本。文字解释可能有错误或事后合理化；不能用解释的流畅程度替代 [[模型评测]]。与 [[推理模型]]、[[提示词工程]] 交叉阅读。\n\n## 来源与核对\n[1] [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903) — Google\n[2] [Self-Consistency Improves Chain of Thought Reasoning in Language Models](https://arxiv.org/abs/2203.11171) — Google",
+    "tags": [
+      "方法层",
+      "思维链"
+    ],
+    "aliases": [
+      "CoT",
+      "Chain of Thought",
+      "链式思考"
+    ],
+    "prerequisites": [
+      "提示词工程",
+      "少样本学习"
+    ],
+    "source": "https://arxiv.org/abs/2201.11903",
+    "sources": [
+      {
+        "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+        "url": "https://arxiv.org/abs/2201.11903",
+        "publisher": "Google"
+      },
+      {
+        "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+        "url": "https://arxiv.org/abs/2203.11171",
+        "publisher": "Google"
+      }
+    ],
+    "noteType": "concept",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "缩放定律",
+    "collection": "AI 学习",
+    "summary": "用经验关系描述模型规模、数据与计算投入怎样影响训练损失，帮助讨论资源分配。",
+    "overview": "用经验关系描述模型规模、数据与计算投入怎样影响训练损失，帮助讨论资源分配。\n\n建议先了解：[[大语言模型]]、[[模型评测]]。阅读完整内容可对照不同研究的设计与边界。",
+    "content": "## 从“越大越好”到资源怎么分\nOpenAI 的缩放研究拟合语言模型损失与参数量、数据量、计算量之间的经验关系。关注的是给定研究设定中的规律，而非对所有能力或产品体验的保证。[1]\n\n## 不同研究为何给出不同配比\nDeepMind 的 Chinchilla 研究重新考察计算预算下模型参数与训练 Token 的分配，指出其研究范围内许多模型相对数据量偏大。与先前拟合结论的差异，提醒我们需要关注训练配方、测量范围与外推假设。[2]\n\n## 对学习地图的意义\n将参数量、训练 [[Token]] 数、推理成本与下游任务效果分开看。不能仅凭某条经验曲线推断一个 [[AI Agent]] 是否可靠，也不能直接把密集模型结论套到 [[混合专家模型]]。实际选择需要结合 [[模型评测]]。\n\n## 来源与核对\n[1] [Scaling Laws for Neural Language Models](https://arxiv.org/abs/2001.08361) — OpenAI\n[2] [Training Compute-Optimal Large Language Models](https://arxiv.org/abs/2203.15556) — Google DeepMind",
+    "tags": [
+      "基础层",
+      "缩放定律"
+    ],
+    "aliases": [
+      "Scaling laws",
+      "Scaling law",
+      "Chinchilla",
+      "计算最优"
+    ],
+    "prerequisites": [
+      "大语言模型",
+      "模型评测"
+    ],
+    "source": "https://arxiv.org/abs/2001.08361",
+    "sources": [
+      {
+        "title": "Scaling Laws for Neural Language Models",
+        "url": "https://arxiv.org/abs/2001.08361",
+        "publisher": "OpenAI"
+      },
+      {
+        "title": "Training Compute-Optimal Large Language Models",
+        "url": "https://arxiv.org/abs/2203.15556",
+        "publisher": "Google DeepMind"
+      }
+    ],
+    "noteType": "concept",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "上下文工程",
+    "collection": "AI 学习",
+    "summary": "围绕任务选择、组织、压缩和更新模型可见的信息，包括指令、检索内容、工具结果和记忆。",
+    "overview": "围绕任务选择、组织、压缩和更新模型可见的信息，包括指令、检索内容、工具结果和记忆。\n\n建议先了解：[[上下文窗口]]、[[系统提示词]]、[[工具调用]]。阅读完整内容可对照不同研究的设计与边界。",
+    "content": "## 从一句提示词到整个信息环境\nAnthropic 将上下文工程描述为管理推理时进入模型的信息集合。[[系统提示词]] 只是其中一部分，检索、工具返回、历史消息与 [[记忆机制]] 都会竞争有限的上下文空间。[1]\n\n## 多 Agent 的具体例子\n其多 Agent 研究系统分享了任务拆分、并行检索、上下文隔离与信息汇总的实践，同时指出协调成本、Token 开销和任务适配问题。这个案例是工程经验，不能直接当成所有任务上多 Agent 优于单 Agent 的证明。[2]\n\n## 可落地的检查\n在 [[AI Agent]] 中观察每次调用到底带入哪些信息：保留必要证据、控制重复工具输出、为长任务做摘要或持久化。与 [[RAG]]、[[文档分块]]、[[提示词缓存]] 连接起来理解，并用完成率、证据准确性和成本共同评估效果。\n\n## 来源与核对\n[1] [Effective context engineering for AI agents](https://www.anthropic.com/research/effective-context-engineering-for-ai-agents) — Anthropic\n[2] [How we built our multi-agent research system](https://www.anthropic.com/research/multi-agent-research-system) — Anthropic",
+    "tags": [
+      "方法层",
+      "上下文工程"
+    ],
+    "aliases": [
+      "Context engineering",
+      "Context management",
+      "上下文管理"
+    ],
+    "prerequisites": [
+      "上下文窗口",
+      "系统提示词",
+      "工具调用"
+    ],
+    "source": "https://www.anthropic.com/research/effective-context-engineering-for-ai-agents",
+    "sources": [
+      {
+        "title": "Effective context engineering for AI agents",
+        "url": "https://www.anthropic.com/research/effective-context-engineering-for-ai-agents",
+        "publisher": "Anthropic"
+      },
+      {
+        "title": "How we built our multi-agent research system",
+        "url": "https://www.anthropic.com/research/multi-agent-research-system",
+        "publisher": "Anthropic"
+      }
+    ],
+    "noteType": "concept",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "Anthropic",
+    "collection": "研究机构",
+    "summary": "从 Agent 架构、工具设计与上下文管理，理解模型怎样组成可用的系统。",
+    "overview": "本次选入 3 篇相关研究综述。\n\n相关主题：[[上下文工程]]、[[AI Agent]]、[[工具调用]]",
+    "content": "## 从一个研究主题进入\n\n从 Agent 架构、工具设计与上下文管理，理解模型怎样组成可用的系统。这是一份基于本次选入文献的导航，不是该机构的完整研究目录。\n\n## 本地已有的研究综述\n\n- [[从工作流到自主 Agent：何时值得增加复杂度]]：综合 Anthropic 的架构方法与研究系统实践，理解固定流程、动态决策和多 Agent 的取舍。\n- [[上下文工程：把有限窗口留给有用信息]]：把系统指令、检索片段、工具返回和长期笔记作为一个整体管理，理解上下文工程的目标与边界。\n- [[工具设计与 MCP：连接能力和使用能力是两回事]]：MCP 提供连接标准，工具设计决定模型能否选对工具并理解结果，两者解决不同层面的问题。\n\n## 跨主题继续探索\n\n[[上下文工程]]、[[AI Agent]]、[[工具调用]]。同一概念往往被多个机构从不同角度讨论，可以从概念页的反向链接继续阅读。\n\n## 阅读方式\n\n先读 L0 摘要判断是否相关，再读 L1 概览和 L2 细节。具体观点与实验条件以每篇综述列出的原始来源为准；机构归属按本次文献标注，不把所有结果归给现有的统一品牌。",
+    "tags": [
+      "应用层",
+      "研究机构",
+      "Anthropic"
+    ],
+    "prerequisites": [],
+    "aliases": [],
+    "sources": [
+      {
+        "title": "Building effective agents",
+        "url": "https://www.anthropic.com/research/building-effective-agents",
+        "publisher": "Anthropic",
+        "publishedAt": "2024-12-19"
+      },
+      {
+        "title": "How we built our multi-agent research system",
+        "url": "https://www.anthropic.com/research/multi-agent-research-system",
+        "publisher": "Anthropic",
+        "publishedAt": "2025-06-13"
+      },
+      {
+        "title": "Effective context engineering for AI agents",
+        "url": "https://www.anthropic.com/research/effective-context-engineering-for-ai-agents",
+        "publisher": "Anthropic",
+        "publishedAt": "2025-09-29"
+      },
+      {
+        "title": "The think tool: Enabling Claude to stop and think in complex tool use situations",
+        "url": "https://www.anthropic.com/research/claude-think-tool",
+        "publisher": "Anthropic",
+        "publishedAt": "2025-03-20"
+      },
+      {
+        "title": "Introducing the Model Context Protocol",
+        "url": "https://www.anthropic.com/news/model-context-protocol",
+        "publisher": "Anthropic",
+        "publishedAt": "2024-11-25"
+      },
+      {
+        "title": "Writing effective tools for agents — with agents",
+        "url": "https://www.anthropic.com/research/writing-tools-for-agents",
+        "publisher": "Anthropic",
+        "publishedAt": "2025-09-11"
+      }
+    ],
+    "source": "https://www.anthropic.com/research/building-effective-agents",
+    "noteType": "organization",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "OpenAI",
+    "collection": "研究机构",
+    "summary": "从指令遵循、推理计算和结构化接口，理解训练、推理与应用的不同层次。",
+    "overview": "本次选入 4 篇相关研究综述。\n\n相关主题：[[强化学习]]、[[推理模型]]、[[结构化输出]]",
+    "content": "## 从一个研究主题进入\n\n从指令遵循、推理计算和结构化接口，理解训练、推理与应用的不同层次。这是一份基于本次选入文献的导航，不是该机构的完整研究目录。\n\n## 本地已有的研究综述\n\n- [[从人类偏好到指令遵循：RLHF 如何改变模型行为]]：通过摘要偏好学习与 InstructGPT，区分预测下一个词、遵循指令和事实正确这三个训练目标。\n- [[OpenAI o1：把计算预算放到回答之前]]：结合 o1 研究说明与系统卡，理解训练时强化学习、推理时计算和能力评测为何必须一起看。\n- [[函数调用与结构化输出：格式正确之后还要验证什么]]：结合 OpenAI 两篇工程发布，理解函数参数生成、JSON Schema 约束与事实正确性的边界。\n- [[从缩放定律到 Chinchilla：参数不是唯一的规模]]：对照 OpenAI 的经验缩放规律与 DeepMind 的算力最优研究，理解模型大小、训练数据和计算预算的共同约束。\n\n## 跨主题继续探索\n\n[[强化学习]]、[[推理模型]]、[[结构化输出]]。同一概念往往被多个机构从不同角度讨论，可以从概念页的反向链接继续阅读。\n\n## 阅读方式\n\n先读 L0 摘要判断是否相关，再读 L1 概览和 L2 细节。具体观点与实验条件以每篇综述列出的原始来源为准；机构归属按本次文献标注，不把所有结果归给现有的统一品牌。",
+    "tags": [
+      "应用层",
+      "研究机构",
+      "OpenAI"
+    ],
+    "prerequisites": [],
+    "aliases": [],
+    "sources": [
+      {
+        "title": "Learning to summarize from human feedback",
+        "url": "https://arxiv.org/abs/2009.01325",
+        "publisher": "OpenAI",
+        "publishedAt": "2020-09-02"
+      },
+      {
+        "title": "Aligning language models to follow instructions",
+        "url": "https://openai.com/index/instruction-following/",
+        "publisher": "OpenAI",
+        "publishedAt": "2022-01-27"
+      },
+      {
+        "title": "Learning to reason with LLMs",
+        "url": "https://openai.com/index/learning-to-reason-with-llms/",
+        "publisher": "OpenAI",
+        "publishedAt": "2024-09-12"
+      },
+      {
+        "title": "OpenAI o1 System Card",
+        "url": "https://openai.com/index/openai-o1-system-card/",
+        "publisher": "OpenAI"
+      },
+      {
+        "title": "Function calling and other API updates",
+        "url": "https://openai.com/index/function-calling-and-other-api-updates/",
+        "publisher": "OpenAI",
+        "publishedAt": "2023-06-13"
+      },
+      {
+        "title": "Introducing Structured Outputs in the API",
+        "url": "https://openai.com/index/introducing-structured-outputs-in-the-api/",
+        "publisher": "OpenAI",
+        "publishedAt": "2024-08-06"
+      }
+    ],
+    "source": "https://arxiv.org/abs/2009.01325",
+    "noteType": "organization",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "DeepSeek",
+    "collection": "研究机构",
+    "summary": "从 MoE、MLA 到推理强化学习，连接模型效率与能力训练。",
+    "overview": "本次选入 3 篇相关研究综述。\n\n相关主题：[[混合专家模型]]、[[多头潜在注意力]]、[[强化学习]]",
+    "content": "## 从一个研究主题进入\n\n从 MoE、MLA 到推理强化学习，连接模型效率与能力训练。这是一份基于本次选入文献的导航，不是该机构的完整研究目录。\n\n## 本地已有的研究综述\n\n- [[DeepSeek-V2 与 DeepSeekMoE：容量和计算分开增长]]：从专家细分、共享专家与 MLA 理解 DeepSeek 如何分别降低前馈计算和注意力缓存成本。\n- [[DeepSeek-V3：专家负载均衡也是学习问题]]：把独立的无辅助损失均衡研究与 V3 技术报告连起来，理解路由质量、训练目标和系统效率的共同作用。\n- [[DeepSeek-R1 与 DeepSeekMath：奖励怎样塑造推理]]：比较 DeepSeekMath 的 GRPO 与 R1 的训练流程，理解结果奖励、冷启动、蒸馏及其适用边界。\n\n## 跨主题继续探索\n\n[[混合专家模型]]、[[多头潜在注意力]]、[[强化学习]]。同一概念往往被多个机构从不同角度讨论，可以从概念页的反向链接继续阅读。\n\n## 阅读方式\n\n先读 L0 摘要判断是否相关，再读 L1 概览和 L2 细节。具体观点与实验条件以每篇综述列出的原始来源为准；机构归属按本次文献标注，不把所有结果归给现有的统一品牌。",
+    "tags": [
+      "应用层",
+      "研究机构",
+      "DeepSeek"
+    ],
+    "prerequisites": [],
+    "aliases": [
+      "深度求索"
+    ],
+    "sources": [
+      {
+        "title": "DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models",
+        "url": "https://arxiv.org/abs/2401.06066",
+        "publisher": "DeepSeek",
+        "publishedAt": "2024-01-11"
+      },
+      {
+        "title": "DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model",
+        "url": "https://arxiv.org/abs/2405.04434",
+        "publisher": "DeepSeek",
+        "publishedAt": "2024-05-07"
+      },
+      {
+        "title": "Auxiliary-Loss-Free Load Balancing Strategy for Mixture-of-Experts",
+        "url": "https://arxiv.org/abs/2408.15664",
+        "publisher": "DeepSeek / Peking University",
+        "publishedAt": "2024-08-28"
+      },
+      {
+        "title": "DeepSeek-V3 Technical Report",
+        "url": "https://arxiv.org/abs/2412.19437",
+        "publisher": "DeepSeek",
+        "publishedAt": "2024-12-27"
+      },
+      {
+        "title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+        "url": "https://arxiv.org/abs/2402.03300",
+        "publisher": "DeepSeek",
+        "publishedAt": "2024-02-05"
+      },
+      {
+        "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (v1)",
+        "url": "https://arxiv.org/html/2501.12948v1",
+        "publisher": "DeepSeek",
+        "publishedAt": "2025-01-22"
+      }
+    ],
+    "source": "https://arxiv.org/abs/2401.06066",
+    "noteType": "organization",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "Google",
+    "collection": "研究机构",
+    "summary": "从 Transformer 到稀疏专家、思维链与检索，追踪基础结构和方法的研究脉络。",
+    "overview": "本次选入 6 篇相关研究综述。\n\n相关主题：[[Transformer]]、[[注意力机制]]、[[思维链]]",
+    "content": "## 从一个研究主题进入\n\n从 Transformer 到稀疏专家、思维链与检索，追踪基础结构和方法的研究脉络。这是一份基于本次选入文献的导航，不是该机构的完整研究目录。\n\n## 本地已有的研究综述\n\n- [[Transformer 与 Universal Transformer：信息交互和重复计算]]：把原始 Transformer 与 Universal Transformer 对照，理解注意力、位置表示以及跨深度重复计算的区别。\n- [[残差连接与归一化：深层网络如何保持可训练]]：从 ResNet 原始研究到 Transformer 与 T5，区分信息捷径、数值尺度和完整模型效果。\n- [[Switch 与 GShard：稀疏模型为什么仍需要系统工程]]：两项 Google 研究说明，专家稀疏激活可以扩充容量，但路由、分片、通信与稳定性共同决定实际效率。\n- [[思维链与自洽性：从一条路径到多条候选]]：Google 的两篇研究分别改变提示内容和解码策略，帮助区分展示中间步骤、采样多个答案与训练模型。\n- [[ReAct 与 WebAgent：让行动带回新证据]]：从推理与行动交替到网页任务模块化，理解 Agent 如何借助外部反馈继续规划，而不只生成一份计划。\n- [[REALM 与 RETRO：把知识放进可检索的外部记忆]]：比较 Google 的 REALM 与 DeepMind 的 RETRO，理解检索不仅可以接在模型外，也可以参与训练和模型结构。\n\n## 跨主题继续探索\n\n[[Transformer]]、[[注意力机制]]、[[思维链]]。同一概念往往被多个机构从不同角度讨论，可以从概念页的反向链接继续阅读。\n\n## 阅读方式\n\n先读 L0 摘要判断是否相关，再读 L1 概览和 L2 细节。具体观点与实验条件以每篇综述列出的原始来源为准；机构归属按本次文献标注，不把所有结果归给现有的统一品牌。",
+    "tags": [
+      "应用层",
+      "研究机构",
+      "Google"
+    ],
+    "prerequisites": [],
+    "aliases": [
+      "谷歌"
+    ],
+    "sources": [
+      {
+        "title": "Attention Is All You Need",
+        "url": "https://arxiv.org/abs/1706.03762",
+        "publisher": "Google (Google Brain / Google Research)",
+        "publishedAt": "2017-06-12"
+      },
+      {
+        "title": "Universal Transformers",
+        "url": "https://arxiv.org/abs/1807.03819",
+        "publisher": "Google Brain / DeepMind / University of Amsterdam",
+        "publishedAt": "2018-07-10"
+      },
+      {
+        "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+        "url": "https://arxiv.org/html/1910.10683v4",
+        "publisher": "Google",
+        "publishedAt": "2019-10-23"
+      },
+      {
+        "title": "GShard: Scaling Giant Models with Conditional Computation and Automatic Sharding",
+        "url": "https://arxiv.org/abs/2006.16668",
+        "publisher": "Google",
+        "publishedAt": "2020-06-30"
+      },
+      {
+        "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+        "url": "https://arxiv.org/abs/2101.03961",
+        "publisher": "Google",
+        "publishedAt": "2021-01-11"
+      },
+      {
+        "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+        "url": "https://arxiv.org/abs/2201.11903",
+        "publisher": "Google",
+        "publishedAt": "2022-01-28"
+      }
+    ],
+    "source": "https://arxiv.org/abs/1706.03762",
+    "noteType": "organization",
+    "organizations": [],
+    "relations": []
+  },
+  {
+    "title": "Google DeepMind",
+    "collection": "研究机构",
+    "summary": "连接检索增强、计算资源分配、行动与代码评测等研究主题。",
+    "overview": "本次选入 5 篇相关研究综述。\n\n相关主题：[[RAG]]、[[缩放定律]]、[[模型评测]]",
+    "content": "## 从一个研究主题进入\n\n连接检索增强、计算资源分配、行动与代码评测等研究主题。这是一份基于本次选入文献的导航，不是该机构的完整研究目录。\n\n## 本地已有的研究综述\n\n- [[Transformer 与 Universal Transformer：信息交互和重复计算]]：把原始 Transformer 与 Universal Transformer 对照，理解注意力、位置表示以及跨深度重复计算的区别。\n- [[ReAct 与 WebAgent：让行动带回新证据]]：从推理与行动交替到网页任务模块化，理解 Agent 如何借助外部反馈继续规划，而不只生成一份计划。\n- [[REALM 与 RETRO：把知识放进可检索的外部记忆]]：比较 Google 的 REALM 与 DeepMind 的 RETRO，理解检索不仅可以接在模型外，也可以参与训练和模型结构。\n- [[从缩放定律到 Chinchilla：参数不是唯一的规模]]：对照 OpenAI 的经验缩放规律与 DeepMind 的算力最优研究，理解模型大小、训练数据和计算预算的共同约束。\n- [[AlphaCode 系列：生成候选、运行检查与最终评测]]：DeepMind 的代码研究展示模型生成与搜索筛选的配合，也说明单次答案、系统成绩和真实工作表现必须分开。\n\n## 跨主题继续探索\n\n[[RAG]]、[[缩放定律]]、[[模型评测]]。同一概念往往被多个机构从不同角度讨论，可以从概念页的反向链接继续阅读。\n\n## 阅读方式\n\n先读 L0 摘要判断是否相关，再读 L1 概览和 L2 细节。具体观点与实验条件以每篇综述列出的原始来源为准；机构归属按本次文献标注，不把所有结果归给现有的统一品牌。",
+    "tags": [
+      "应用层",
+      "研究机构",
+      "Google DeepMind"
+    ],
+    "prerequisites": [],
+    "aliases": [
+      "DeepMind",
+      "谷歌 DeepMind"
+    ],
+    "sources": [
+      {
+        "title": "A Real-World WebAgent with Planning, Long Context Understanding, and Program Synthesis",
+        "url": "https://arxiv.org/abs/2307.12856",
+        "publisher": "Google DeepMind / University of Tokyo",
+        "publishedAt": "2023-07-24"
+      },
+      {
+        "title": "Improving language models by retrieving from trillions of tokens",
+        "url": "https://arxiv.org/abs/2112.04426",
+        "publisher": "DeepMind (now Google DeepMind)",
+        "publishedAt": "2021-12-08"
+      },
+      {
+        "title": "Training Compute-Optimal Large Language Models",
+        "url": "https://arxiv.org/abs/2203.15556",
+        "publisher": "DeepMind (now Google DeepMind)",
+        "publishedAt": "2022-03-29"
+      },
+      {
+        "title": "Competition-Level Code Generation with AlphaCode",
+        "url": "https://arxiv.org/abs/2203.07814",
+        "publisher": "DeepMind (now Google DeepMind)",
+        "publishedAt": "2022-02-08"
+      },
+      {
+        "title": "AlphaCode 2 Technical Report",
+        "url": "https://storage.googleapis.com/deepmind-media/AlphaCode2/AlphaCode2_Tech_Report.pdf",
+        "publisher": "Google DeepMind",
+        "publishedAt": "2023-12-06"
+      }
+    ],
+    "source": "https://arxiv.org/abs/2307.12856",
+    "noteType": "organization",
+    "organizations": [],
+    "relations": []
+  }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "initialSelected": [
+      "AI Agent"
+    ],
+    "initialHighlighted": 18,
+    "heldHovered": [
+      "AI Agent"
+    ],
+    "heldSeparation": 25.950978246487427,
+    "targetDisplacement": 25.296394792241394,
+    "neighborFollow": 20.034820364261638,
+    "releasedMotion": 44.827842610212016,
+    "afterSelected": [
+      "AI Agent"
+    ],
+    "afterHighlighted": 18
+  },
+  {
+    "initialSelected": [
+      "AI Agent"
+    ],
+    "initialHighlighted": 18,
+    "heldHovered": [
+      "AI Agent"
+    ],
+    "heldSeparation": 26.65386245604152,
+    "targetDisplacement": 25.999387323806157,
+    "neighborFollow": 22.90475030015809,
+    "releasedMotion": 34.882358439633805,
+    "afterSelected": [
+      "AI Agent"
+    ],
+    "afterHighlighted": 18
+  }
+]
