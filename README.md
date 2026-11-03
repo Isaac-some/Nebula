@@ -16,6 +16,8 @@ npm run preview
 
 浏览器打开 http://127.0.0.1:3210 。首次模型下载约 130 MB，之后离线使用。Node.js 24+。本机开发已经安装好依赖和模型。
 
+更新代码后，先在运行服务的终端按 Control+C 停止服务，再运行 `npm run build`，最后运行 `npm run preview`。不要在服务仍运行时覆盖 `.next` 构建目录，否则旧服务可能继续引用已被新构建替换的样式文件，出现无样式白页。
+
 开发：
 
 ```bash
@@ -55,14 +57,25 @@ npm run dev -- --hostname 127.0.0.1 --port 3210
 
 ## 验证
 
-先启动应用，然后运行：
+先停止运行中的应用，再检查与构建：
 
 ```bash
 cd /Users/isaac/Documents/ChatGPT/知识图谱
 npm run lint
 npm run typecheck
-npm run test
 npm run build
+```
+
+然后启动应用，在另一个终端运行浏览器验收：
+
+```bash
+cd /Users/isaac/Documents/ChatGPT/知识图谱
+npm run preview
+```
+
+```bash
+cd /Users/isaac/Documents/ChatGPT/知识图谱
+npm run test
 ```
 
 端到端测试使用本机 Chrome，对临时验收文档进行创建与删除，不修改示例内容。语义用例要求已建立索引。另见 `docs/research/design.md`、`docs/research/obsidian-graph-interaction.md`、`docs/research/drag-and-select-fix.md` 与 `docs/验收记录.md`。
